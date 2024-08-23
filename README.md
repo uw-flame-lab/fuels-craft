@@ -1,5 +1,5 @@
 # fuels-craft
-Fuels Craft project
+FuelsCraft project
 
 Resources: 
 ---
@@ -10,6 +10,15 @@ Resources:
 FastFuels Interactive API: https://api.fastfuels.silvxlabs.com/docs
 
 API Key: 114b3607f17d4cf3b3bdc472694aa3b6
+
+FastFuels API Object Heirarchy
+---
+    Application  
+        - Domain  
+            - Features: Road, Water  
+            - Tree Inventory (other Inventory types coming soon)  
+            - Grids: Tree, Surface, Topography, Feature  
+
 
 
 The workflow for getting QUIC-Fire data is:
@@ -28,7 +37,7 @@ curl -X 'GET'
 -H 'accept: application/json'  
 -H 'api-key: 114b3607f17d4cf3b3bdc472694aa3b6'  
 
-API Release Notes from Anthony: 
+FastFuels API Release Notes from Anthony: 
 ---
 
 I'm happy to announce that we have an official release candidate of the new (version 1) FastFuels API available for our partners to use. I think that you'll find that this version is significantly different from previous versions of the FastFuels API. Hopefully, these changes reflect a greater expressiveness in terms of modeling capabilities and data independence. Our objective moving forward is to provide users with a comprehensive fuel modeling platform that can rapidly ingest new sources of data, provide a menu of modeling options, offer tools for bringing predicted landscapes into alignment with observed landscapes, and output data to a number of different formats (including fire model inputs).
