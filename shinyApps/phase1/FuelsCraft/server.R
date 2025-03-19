@@ -8,53 +8,54 @@
 #
 
 library(shiny)
+library(RColorBrewer)
+
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
   
-  # reactive values
-  rv <- reactiveValues()
-  rv$polygon <- NULL
-  rv$ff_polygon <- NULL
-  rv$custom_polygon <- NULL
-  rv$ff_tree_inventory <- NULL
-  rv$custom_tree_inventory <- NULL
-  rv$ff_data <- NULL
-  rv$custom_data <- NULL
-
-    # output$distPlot <- renderPlot({
-    # 
-    #     # generate bins based on input$bins from ui.R
-    #     x    <- faithful[, 2]
-    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    # 
-    #     # draw the histogram with the specified number of bins
-    #     hist(x, breaks = bins, col = 'darkgray', border = 'white',
-    #          xlab = 'Waiting time to next eruption (in mins)',
-    #          main = 'Histogram of waiting times')
-    # 
-    # })
-
-  drawEmptyMap <- function() {
-    leaflet() %>%
-      addProviderTiles("Esri.WorldImagery") %>% 
-      setView(-120.15, 48.42, zoom = 12) %>%
-      addDrawToolbar(
-        targetGroup = "drawn",
-        polylineOptions = FALSE,
-        polygonOptions = drawPolygonOptions(showArea = FALSE),
-        #polygonOptions = drawPolygonOptions(showArea = TRUE),  # this doesn't work (labels do not appear)
-        circleOptions = FALSE,
-        rectangleOptions = FALSE,
-        markerOptions = FALSE,
-        circleMarkerOptions = FALSE
-        # editOptions = editToolbarOptions()
-      )
-  }
+    # reactive values
+    rv <- reactiveValues()
+    rv$polygon <- NULL
+    rv$ff_polygon <- NULL
+    rv$custom_polygon <- NULL
+    rv$ff_tree_inventory <- NULL
+    rv$custom_tree_inventory <- NULL
+    rv$ff_data <- NULL
+    rv$ff_data2 <- NULL # after add/remove trees by polygon to ff_data
+    rv$ff_data_temp <- NULL   # after slider filters applied to ff_data2
+    rv$custom_data <- NULL
+    rv$custom_data2 <- NULL # after add/remove trees by polygon to custom_data
+    rv$custom_data_temp <- NULL
+    rv$ff_max_HT <- NULL
+    rv$custom_max_HT <- NULL
+    rv$ff_hist_ylim <- NULL
+    rv$ff_breaks <- NULL
+    rv$custom_hist_ylim <- NULL
+    rv$custom_breaks <- NULL
   
-      
-    output$map <- renderLeaflet({drawEmptyMap()})
+    drawEmptyMap <- function() {
+      map <- leaflet() %>%
+        addProviderTiles("Esri.WorldImagery") %>%
+        setView(-120.15, 48.42, zoom = 12) %>%
+        addDrawToolbar(
+          targetGroup = "drawn",
+          polylineOptions = FALSE,
+          polygonOptions = drawPolygonOptions(showArea = FALSE),
+          #polygonOptions = drawPolygonOptions(showArea = TRUE),  # this doesn't work (labels do not appear)
+          circleOptions = FALSE,
+          rectangleOptions = FALSE,
+          markerOptions = FALSE,
+          circleMarkerOptions = FALSE,
+          editOptions = editToolbarOptions()
+        )
+  #    return(map)
+      renderLeaflet(map)
+    }
     
+    output$map <- drawEmptyMap()
+#  output$map <- renderLeaflet({drawEmptyMap()})
+  
     observeEvent(input$map_draw_new_feature, {
       feature <- input$map_draw_new_feature
       coords <- feature$geometry$coordinates[[1]]
@@ -101,7 +102,11 @@ function(input, output, session) {
       rv$ff_polygon <- NULL
       rv$custom_polygon <- NULL
       rv$ff_data <- NULL
+      rv$ff_data2 <- NULL
+      rv$ff_data_temp <- NULL
       rv$custom_data <- NULL
+      rv$custom_data2 <- NULL
+      rv$custom_data_temp <- NULL
       rv$ff_tree_inventory <- NULL
       rv$custom_tree_inventory <- NULL
       output$area <- renderPrint("")
@@ -114,11 +119,14 @@ function(input, output, session) {
       updateActionButton(session, "createSurfaceGrid", disabled = TRUE)
       updateActionButton(session, "createTopographyGrid", disabled = TRUE)
       updateActionButton(session, "getInputFiles", disabled = TRUE)
-      output$map <- renderLeaflet({drawEmptyMap()})
+      output$map <- drawEmptyMap()
     })
     
     # handle cropCustomPolygon button click
     observeEvent(input$cropCustomPolygon, {
+      if(is.null(rv$polygon)) {
+        return(NULL)
+      }
       
       # convert rv$polygon to sf object, update rv$custom_polygon
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
@@ -132,34 +140,104 @@ function(input, output, session) {
       within_polygon <- sapply(st_within(custom_data_sf, rv$custom_polygon), length) > 0
       
       # Subset the dataframe using the logical vector
-      rv$custom_data <- rv$custom_data[within_polygon, ]      
+      rv$custom_data <- rv$custom_data[within_polygon, ]
+      rv$custom_data2 <- rv$custom_data
       
       # save the custom tree inventory to a file with a timestamp
-      timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-      write.csv(rv$custom_data, paste0("tree_inventory_custom_", timestamp, ".csv"), row.names = FALSE)
+      # timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+      # write.csv(rv$custom_data, paste0("tree_inventory_custom_", timestamp, ".csv"), row.names = FALSE)
 
       # update the map
       loadTreeInventory()
     })
     
-    observeEvent(input$removeFFTrees, {
+    observeEvent(input$removeFFTreesByPolygon, {
+      if(is.null(rv$polygon)) {
+        return(NULL)
+      }
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
       
       # remove trees that are in rv$polygon from rv$ff_data
       # Convert ff_data to sf object
-      ff_data_sf <- st_as_sf(rv$ff_data, coords = c("Longitude", "Latitude"), crs = 4326)
+      ff_data_sf <- st_as_sf(rv$ff_data2, coords = c("Longitude", "Latitude"), crs = 4326)
       
       # Check if points are within the polygon
       within_polygon <- sapply(st_within(ff_data_sf, sf_object), length) > 0
       
       # Subset the dataframe using the logical vector
-      rv$ff_data <- rv$ff_data[!within_polygon, ]
-      
+      rv$ff_data2 <- rv$ff_data2[!within_polygon, ]
+
       # save the ff tree inventory to a file with a timestamp
-      timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-      write.csv(rv$ff_data, paste0("tree_inventory_ff_", timestamp, ".csv"), row.names = FALSE)
+#      timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+#      write.csv(rv$ff_data_temp, paste0("tree_inventory_ff_", timestamp, ".csv"), row.names = FALSE)
       
+      updateMapFF()
+    })
+    
+    observeEvent(input$removeCustomTreesByPolygon, {
+      if(is.null(rv$polygon)) {
+        return(NULL)
+      }
+      sf_object <- geojsonsf::geojson_sf(rv$polygon)
+      
+      # remove trees that are in rv$polygon from rv$custom_data
+      # Convert custom_data to sf object
+      custom_data_sf <- st_as_sf(rv$custom_data2, coords = c("Longitude", "Latitude"), crs = 4326)
+      
+      # Check if points are within the polygon
+      within_polygon <- sapply(st_within(custom_data_sf, sf_object), length) > 0
+      
+      # Subset the dataframe using the logical vector
+      rv$custom_data2 <- rv$custom_data2[!within_polygon, ]
+      
+      updateMapCustom()
+    })
+    
+    observeEvent(input$mergeInventories, {
+      # merge rv$ff_data2 and rv$custom_data2
+      merged_data <- rbind(rv$ff_data_temp, rv$custom_data_temp)
+      
+      # save the merged tree inventory to a file with a timestamp
+      # timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+      # write.csv(merged_data, paste0("tree_inventory_merged_", timestamp, ".csv"), row.names = FALSE)
+      
+      rv$ff_data <- merged_data
+      rv$ff_data2 <- merged_data
+      rv$ff_data_temp <- merged_data
+      rv$custom_tree_inventory <- NULL
+      rv$custom_data <- NULL
+      rv$custom_data2 <- NULL
+      rv$custom_data_temp <- NULL
+      
+      # update the map
       loadTreeInventory()
+    })
+    
+    observeEvent(input$uploadInventory, {
+      if(is.null(rv$ff_data_temp)) {
+        return(NULL)
+      }
+      
+      # save the merged tree inventory to a file with a timestamp
+      timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+      fn = paste0("tree_inventory_uploaded_", timestamp, ".csv")
+      write.csv(rv$ff_data_temp, fn, row.names = FALSE)
+      
+      headers <- add_headers(
+        accept = "application/json",
+        `api-key` = input$api_key
+      )
+      url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/inventories/tree/upload")
+      
+      files = list()
+      files <- list(uploadFile = upload_file(fn, type = "text/csv"))
+      response <- POST(
+        url, headers,
+        body = list(uploadFile = upload_file(fn)),
+        encode = "multipart"
+      )
+      print(response)
+      print(content(response, "text"))
     })
 
     # handle createDomain button click
@@ -229,7 +307,7 @@ function(input, output, session) {
       output$waterFeature <- renderPrint("completed")
       updateActionButton(session, "createTreeInventory", disabled = FALSE)
     })
-    
+        
     # handle createTreeInventory button click
     observeEvent(input$createTreeInventory, {
       headers <- add_headers(
@@ -238,7 +316,28 @@ function(input, output, session) {
         `Content-Type` = "application/json"
       )
       url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/inventories/tree")
-      response <- POST(url, headers, body = '{"sources": ["TreeMap"], "featureMasks": ["road", "water"]}')
+      
+      bodyContent = paste0('{"sources": ["TreeMap"], "TreeMap": {"version": "', input$treeMapVersion, '"}, "featureMasks": ["road", "water"]}')
+      if(input$treeMapStyle == "raw") {
+        # do nothing
+      } else if (input$treeMapStyle == "fusion") {
+        bodyContent = paste0('{"sources": ["TreeMap"], "TreeMap": {
+                                              "version": "', input$treeMapVersion, '", "seed":123456789, 
+                                              "canopyHeightMapConfiguration": {"source":"Meta2024"}}, 
+                                              "featureMasks": ["road", "water"]
+                                              }')
+      }
+      
+#      response <- POST(url, headers, body = '{"sources": ["TreeMap"], "featureMasks": ["road", "water"]}')
+      # response <- POST(url, headers, body = '{"sources": ["TreeMap"], 
+      #                                         "TreeMap": {
+      #                                         "version":"2014", 
+      #                                         "seed":123456789, 
+      #                                         "canopyHeightMapConfiguration": {"source":"Meta2024"}
+      #                                         } 
+      #                                         }')
+      
+      response <- POST(url, headers, body = bodyContent)
       contentResponse = content(response, "parsed")
       showPageSpinner()
       while (contentResponse$status != "completed") {
@@ -294,21 +393,8 @@ function(input, output, session) {
         # get coordinates from rv$custom_polygon which was calculated from: 
         # rv$custom_polygon <- st_as_sf(convex_hull)
         
-#        rv$polygon <- geojson_from_coords(rv$custom_polygon$x[[1]][1])
         rv$polygon <- geojson_from_coords(rv$custom_polygon$x[[1]][[1]])
-        
-        
-        
-        
-        
-        
-        
-#        rv$polygon <- geojson_from_coords(rv$custom_polygon$geometry$coordinates[[1]])
-#        rv$polygon <- geojsonsf::sf_geojson(rv$custom_polygon)
       }
-      
-      
-      
       updateActionButton(session, "createDomain", disabled = FALSE)
     })
     
@@ -416,29 +502,35 @@ function(input, output, session) {
       output$inputFiles <- renderPrint(contentResponse$signedUrl)
     })
     
-    # handle change to customTreeAttributeChange slider
-    observeEvent(input$customTreeAttributeChange, {
-      if (!is.null(rv$custom_data)) {
-        rv$custom_data[[input$customTreeAttribute]] <- rv$custom_data[[input$customTreeAttribute]] * (1 + input$customTreeAttributeChange/100)
-        # update the map
-        proxy <- leafletProxy("map")
-        proxy %>% clearGroup("custom_circles")
-        proxy %>% addCircles(
-          data = rv$custom_data,
-          ~Longitude, ~Latitude,
-          color = "limegreen", radius = ~DIA/10.0, opacity = .7,
-          fillColor = "limegreen", fillOpacity = .5,
-          group="custom_circles"
-        )
-        
-        # update the histogram
-        output$attributeHist <- renderPlot({
-          hist(rv$custom_data[[input$customTreeAttribute]], col = "limegreen", border = "white",
-               xlab = input$customTreeAttribute, main = paste("Histogram of", input$customTreeAttribute))
-        })
+    # handle change to ffTreeHeight slider
+    observeEvent(input$ffTreeHeight, {
+        updateMapFF()
+    })
+    
+    # handle change to customTreeHeight slider
+    observeEvent(input$customTreeHeight, {
+        updateMapCustom()
+    })
+    
+    # resetFFTreeInventory
+    observeEvent(input$resetFFTreeInventory, {
+      rv$ff_data2 <- rv$ff_data
+      rv$ff_data_temp <- rv$ff_data2
+      if(!is.null(rv$ff_max_HT))
+      {
+        updateSliderInput(session, "ffTreeHeight", value = c(0, ceiling(rv$ff_max_HT)))
       }
     })
     
+    # resetCustomTreeInventory
+    observeEvent(input$resetCustomTreeInventory, {
+      rv$custom_data2 <- rv$custom_data
+      rv$custom_data_temp <- rv$custom_data
+      if(!is.null(rv$custom_max_HT))
+      {
+        updateSliderInput(session, "customTreeHeight", value = c(0, ceiling(rv$custom_max_HT)))
+      }
+    })
     
     ####################### HELPER FUNCTIONS #######################
     
@@ -472,128 +564,84 @@ function(input, output, session) {
       bounding_rect_polygon <- st_polygon(list(rect_coords))
       return(bounding_rect_polygon)
     }
+    
+    setFFTreeInventory <- function() {
+      res <- getData(rv$ff_tree_inventory)
+      rv$ff_data = res$csv_df
+      # remove rows that have NA in the HT column
+      rv$ff_data <- rv$ff_data[!is.na(rv$ff_data$HT), ]
+      rv$ff_data2 <- rv$ff_data
+      # print how many rows were removed
+      print(paste0("FF Inventory: removed ", nrow(res$csv_df) - nrow(rv$ff_data), " rows with NA in HT column"))
+      rv$ff_data_temp <- rv$ff_data
+      rv$ff_polygon = res$polygon
+      rv$ff_max_HT = max(rv$ff_data$HT, na.rm = TRUE)
+      
+      
+#      updateSliderInput(session, "ffTreeHeight", value = c(0, ceiling(rv$ff_max_HT)), max=ceiling(rv$ff_max_HT))
+    }
+    setCustomTreeInventory <- function() {
+      res <- getData(rv$custom_tree_inventory)
+      rv$custom_data = res$csv_df
+      # remove rows that have NA in the HT column
+      rv$custom_data <- rv$custom_data[!is.na(rv$custom_data$HT), ]
+      rv$custom_data2 <- rv$custom_data
+      # print how many rows were removed
+      print(paste0("Custom Inventory: removed ", nrow(res$csv_df) - nrow(rv$custom_data), " rows with NA in HT column"))
+      rv$custom_data_temp <- rv$custom_data
+      rv$custom_polygon = res$polygon
+      rv$custom_max_HT = max(rv$custom_data$HT, na.rm = TRUE)
 
+#      updateSliderInput(session, "customTreeHeight", value = c(0, ceiling(rv$custom_max_HT)), max=ceiling(rv$custom_max_HT))
+    }
+
+    clearMapFF <- function() {
+      proxy <- leafletProxy("map")
+      proxy %>% clearGroup("ff_circles")
+      proxy %>% clearGroup("outline_ff")
+    }
+
+    clearMapCustom <- function() {
+      proxy <- leafletProxy("map")
+      proxy %>% clearGroup("custom_circles")
+      proxy %>% clearGroup("outline_custom")
+    } 
+    
     loadTreeInventory <- function() {
-      if(!is.null(rv$ff_tree_inventory) && is.null(rv$custom_tree_inventory)) {
-        # we only have FastFuels (ff) tree inventory
-        # show map with ff tree inventory and bounding box
+      clearMapFF()
+      clearMapCustom()
+      
+      if(!is.null(rv$ff_tree_inventory)) {
         if (is.null(rv$ff_data)) {
-          res <- getData(rv$ff_tree_inventory)
-          rv$ff_data = res$csv_df
-          rv$ff_polygon = res$polygon
+          setFFTreeInventory()
         }
         bounding_polygon = rv$ff_polygon
-        bounding_rect_polygon_ff = getBoundingRect(bounding_polygon)
-        map <- leaflet() %>%
-          addProviderTiles("Esri.WorldImagery") %>%
-#          setView(-120.15, 48.42, zoom = 12) %>%
-          addDrawToolbar(
-            targetGroup = "drawn",
-            polylineOptions = FALSE,
-            polygonOptions = drawPolygonOptions(showArea = FALSE),
-            #polygonOptions = drawPolygonOptions(showArea = TRUE),  # this doesn't work (labels do not appear)
-            circleOptions = FALSE,
-            rectangleOptions = FALSE,
-            markerOptions = FALSE,
-            circleMarkerOptions = FALSE
-            # editOptions = editToolbarOptions()
-          ) %>%
-          addCircles(
-            data = rv$ff_data,
-            ~Longitude, ~Latitude,
-            color = "blue", radius = ~DIA/10.0, opacity = .7,
-            fillColor = "blue", fillOpacity = .5,
-            group="ff_circles"
-          ) %>%
-          addPolygons(data = bounding_rect_polygon_ff, group="outline_ff", fill=FALSE, color="blue", weight=2)
+#        bounding_rect_polygon_ff = getBoundingRect(bounding_polygon)
+        proxy <- leafletProxy("map")
+#        proxy %>% addPolygons(data = bounding_rect_polygon_ff, group="outline_ff", fill=FALSE, color="blue", weight=2)
+        proxy %>% addPolygons(data = bounding_polygon, group="outline_ff", fill=FALSE, color="blue", weight=2)
+        updateMapFF()
+        # initialize the ff ht slider
+        output$ff_ht_slider_ui <- renderUI({
+          sliderInput("ffTreeHeight","Tree Height", min = 0, value = c(0, ceiling(rv$ff_max_HT)), max=ceiling(rv$ff_max_HT))
+        })
       }
-      else if(is.null(rv$ff_tree_inventory) && !is.null(rv$custom_tree_inventory)) {
-        # we only have custom tree inventory
-        # show map with custom tree inventory
+      if(!is.null(rv$custom_tree_inventory)) {
         if (is.null(rv$custom_data)) {
-          res <- getData(rv$custom_tree_inventory)
-          rv$custom_data = res$csv_df
-          rv$custom_polygon = res$polygon
+          setCustomTreeInventory()
           # populate the custom tree attribute dropdown with the column names
-          updateSelectInput(session, "customTreeAttribute", choices = colnames(rv$custom_data))
+#          updateSelectInput(session, "customTreeAttribute", choices = colnames(rv$custom_data))
         }
         bounding_polygon = rv$custom_polygon
-        
-        map <- leaflet() %>%
-          addProviderTiles("Esri.WorldImagery") %>%
-          setView(-120.15, 48.42, zoom = 12) %>%
-          addDrawToolbar(
-            targetGroup = "drawn",
-            polylineOptions = FALSE,
-            polygonOptions = drawPolygonOptions(showArea = FALSE),
-            #polygonOptions = drawPolygonOptions(showArea = TRUE),  # this doesn't work (labels do not appear)
-            circleOptions = FALSE,
-            rectangleOptions = FALSE,
-            markerOptions = FALSE,
-            circleMarkerOptions = FALSE
-            # editOptions = editToolbarOptions()
-          ) %>%
-          addCircles(
-            data = rv$custom_data,
-            ~Longitude, ~Latitude,
-            color = "limegreen", radius = ~DIA/10.0, opacity = .7,
-            fillColor = "limegreen", fillOpacity = .5,
-            group="custom_circles"
-          ) %>%
-          addPolygons(data = bounding_polygon, group="outline_custom", fill=FALSE, color="limegreen", weight=2)
-        }
-      else {
-        # we have both ff and custom tree inventories
-        # show map with both tree inventories and bounding box
-        if (is.null(rv$ff_data)) {
-          res <- getData(rv$ff_tree_inventory)
-          rv$ff_data = res$csv_df
-          rv$ff_polygon = res$polygon
-        }
-        if (is.null(rv$custom_data)) {
-          res <- getData(rv$custom_tree_inventory)
-          rv$custom_data = res$csv_df
-          rv$custom_polygon = res$polygon
-        }
-        bounding_polygon = rv$ff_polygon
-        bounding_rect_polygon_ff = getBoundingRect(bounding_polygon)
-
-        bounding_polygon_custom = rv$custom_polygon
-        map <- leaflet() %>%
-          addProviderTiles("Esri.WorldImagery") %>%
-          setView(-120.15, 48.42, zoom = 12) %>%
-          addDrawToolbar(
-            targetGroup = "drawn",
-            polylineOptions = FALSE,
-            polygonOptions = drawPolygonOptions(showArea = FALSE),
-            #polygonOptions = drawPolygonOptions(showArea = TRUE),  # this doesn't work (labels do not appear)
-            circleOptions = FALSE,
-            rectangleOptions = FALSE,
-            markerOptions = FALSE,
-            circleMarkerOptions = FALSE
-            # editOptions = editToolbarOptions()
-          ) %>%
-          addCircles(
-            data = rv$ff_data,
-            ~Longitude, ~Latitude,
-            color = "blue", radius = ~DIA/10.0, opacity = .7,
-            fillColor = "blue", fillOpacity = .5,
-            group="ff_circles"
-          ) %>%
-          addPolygons(data = bounding_rect_polygon_ff, group="outline_ff", fill=FALSE, color="blue", weight=2) %>%
-          addCircles(
-            data = rv$custom_data,
-            ~Longitude, ~Latitude,
-            color = "limegreen", radius = ~DIA/10.0, opacity = .7,
-            fillColor = "limegreen", fillOpacity = .5,
-            group="custom_circles"
-          ) %>%
-          addPolygons(data = bounding_polygon_custom, group="outline_custom", fill=FALSE, color="cyan", weight=2)
+        proxy <- leafletProxy("map")
+        proxy %>% addPolygons(data = bounding_polygon, group="outline_custom", fill=FALSE, color="limegreen", weight=2)
+        updateMapCustom()
+        # initialize the custom ht slider
+        output$custom_ht_slider_ui <- renderUI({
+          sliderInput("customTreeHeight","Tree Height", min = 0, value = c(0, ceiling(rv$custom_max_HT)), max=ceiling(rv$custom_max_HT))
+        })
       }
-      # Display the map
-      output$map <- renderLeaflet({map})
     }
-    
     
     geojson_from_coords <- function(coords) {
       geojson_list <- list(
@@ -611,36 +659,102 @@ function(input, output, session) {
       )
       return(toJSON(geojson_list, auto_unbox = TRUE))
     }
-    # loadCustomTreeInventory <- function() {
-    #   custom_data <- read.csv(rv$custom_tree_inventory)
-    #   sf_data <- st_as_sf(custom_data, coords = c("X", "Y"), crs = 32610)  # UTM Zone 10N
-    #   sf_data_wgs84 <- st_transform(sf_data, crs = 4326)
-    #   custom_data$Longitude <- st_coordinates(sf_data_wgs84)[, 1]
-    #   custom_data$Latitude <- st_coordinates(sf_data_wgs84)[, 2]
-    #   
-    #   map <- leaflet() %>%
-    #     addProviderTiles("Esri.WorldImagery") %>%
-    #     setView(-120.15, 48.42, zoom = 12) %>%
-    #     addDrawToolbar(
-    #       targetGroup = "drawn",
-    #       polylineOptions = FALSE,
-    #       polygonOptions = drawPolygonOptions(showArea = FALSE),
-    #       circleOptions = FALSE,
-    #       rectangleOptions = FALSE,
-    #       markerOptions = FALSE,
-    #       circleMarkerOptions = FALSE
-    #     ) %>%
-    #     addCircles(
-    #       data = custom_data,
-    #       ~Longitude, ~Latitude,
-    #       color = "green", radius = ~DIA/10.0, opacity = .7,
-    #       fillColor = "green", fillOpacity = .5,
-    #       group="custom_circles"
-    #     )
-    # 
-    #   # Display the map
-    #   output$map <- renderLeaflet({map})
-    # }
+    
+    updateMapFF <- function() {
+      # use rv$ff_data2... 
+      # apply HT slider filter to it
+      if(!is.null(input$ffTreeHeight))
+      {
+        rv$ff_data_temp <- rv$ff_data2[rv$ff_data2$HT >= input$ffTreeHeight[1] & rv$ff_data2$HT <= input$ffTreeHeight[2], ]
+      }  
+      if (!is.null(rv$ff_data_temp)) {
+        currentColor = brewer.pal(9, "Blues")
+        if(!identical(rv$ff_data_temp, rv$ff_data)) {
+          currentColor = brewer.pal(9, "Greens")
+        }
+        
+        palette <- colorNumeric(
+          palette = currentColor,
+          domain = c(0, ceiling(rv$ff_max_HT))
+        )
+
+        # update the map
+        proxy <- leafletProxy("map")
+#        proxy %>% clearGroup("drawn")    # doesn't seem to work
+        proxy %>% clearGroup("ff_circles")
+        proxy %>% addCircles(
+          data = rv$ff_data_temp,
+          ~Longitude, ~Latitude,
+          color = ~palette(rv$ff_data_temp$HT), 
+          radius = 3, opacity = .7,
+          group="ff_circles"
+        )
+        
+        # update the histogram
+        output$ffHeightHist <- renderPlot({
+          if(is.null(rv$ff_data_temp$HT)){
+            return(NULL)
+          }
+          hist_obj <- hist(rv$ff_data_temp$HT, breaks=9, plot = FALSE)
+          if(is.null(rv$ff_hist_ylim)){
+            rv$ff_hist_ylim <- c(0, max(hist_obj$counts) * 1.1) 
+            rv$ff_breaks <-hist_obj$breaks
+          }
+          hist(rv$ff_data_temp$HT, col = currentColor, border = "grey",
+               breaks = rv$ff_breaks, ylim = rv$ff_hist_ylim, xlim = c(0, ceiling(rv$ff_max_HT)),
+               xlab = "Tree Heights (HT)", main = "Tree Heights")
+        })
+      }
+    }
+    
+    updateMapCustom <- function() {
+      # use rv$custom_data2... 
+      # apply HT slider filter to it
+      if(!is.null(input$customTreeHeight))
+      {
+        rv$custom_data_temp <- rv$custom_data2[rv$custom_data2$HT >= input$customTreeHeight[1] & rv$custom_data2$HT <= input$customTreeHeight[2], ]
+      }
+
+      if (!is.null(rv$custom_data_temp)) {
+        currentColor = brewer.pal(9, "Reds")
+        if(!identical(rv$custom_data_temp, rv$custom_data)) {
+          currentColor = brewer.pal(9, "Oranges")
+        }
+        
+        palette <- colorNumeric(
+          palette = currentColor,
+          domain = c(0, ceiling(rv$custom_max_HT))
+        )
+        
+        # update the map
+        proxy <- leafletProxy("map")
+#        proxy %>% clearGroup("drawn")
+        proxy %>% clearGroup("custom_circles")
+        proxy %>% addCircles(
+          data = rv$custom_data_temp,
+          ~Longitude, ~Latitude,
+          color = ~palette(rv$custom_data_temp$HT), 
+          radius = 3, opacity = .7,
+          group="custom_circles"
+        )
+        
+        # update the histogram
+        output$customHeightHist <- renderPlot({
+          if(is.null(rv$custom_data_temp$HT)){
+            return(NULL)
+          }
+          hist_obj <- hist(rv$custom_data_temp$HT, breaks=9, plot = FALSE)
+          if(is.null(rv$custom_hist_ylim)){
+            rv$custom_hist_ylim <- c(0, max(hist_obj$counts) * 1.1) 
+            rv$custom_breaks <-hist_obj$breaks
+          }
+          hist(rv$custom_data_temp$HT, col = currentColor, border = "grey",
+               breaks = rv$custom_breaks, ylim = rv$custom_hist_ylim, xlim = c(0, ceiling(rv$custom_max_HT)),
+               xlab = "Tree Heights (HT)", main = "Tree Heights")
+        })
+      }
+    }
+
 }
     
 

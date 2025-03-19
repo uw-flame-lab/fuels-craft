@@ -25,9 +25,6 @@ fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
       sidebarPanel(
-        textInput("customTreeInventoryFile", "Custom Tree Inventory", value="tree_inventory_test1_custom.csv"),
-        actionButton("loadCustomTreeInventory", "Load Custom Tree Inventory", disabled=FALSE),
-        hr(),
         h4("FastFuels API"),
         textInput("api_key", "API Key", value = "b6a21fbe22c54a1890ce0d2252d2f584"),
         actionButton("createDomain", "Create Domain", disabled=TRUE), 
@@ -36,6 +33,9 @@ fluidPage(
         verbatimTextOutput("roadFeature"),
         actionButton("createWaterFeature", "Create Water Feature", disabled=TRUE),
         verbatimTextOutput("waterFeature"),
+        radioButtons("treeMapVersion", "TreeMap Version", choices=c("2014", "2016"), selected="2016", inline=TRUE),
+        radioButtons("treeMapStyle", "Method", choices=c("raw", "fusion"), selected="fusion", inline=TRUE),
+        
         actionButton("createTreeInventory", "Create Tree Inventory", disabled=TRUE),
         verbatimTextOutput("treeInventory"),
         actionButton("exportTreeInventory", "Export Tree Inventory", disabled=TRUE),
@@ -54,21 +54,54 @@ fluidPage(
         actionButton("loadFFTreeInventory", "Load FF Tree Inv.(shortcut)", disabled=FALSE)
       ),
       mainPanel(
-          #plotOutput("distPlot"), 
+        fluidRow(
+          actionButton("clearMap", "Clear Map", disabled=FALSE), 
+        ), 
         leafletOutput("map"),
-#           verbatimTextOutput("polygon_coords"),
+        # put the checkboxes on the same row
+        fluidRow(
+          column(6, checkboxInput("showFFTrees", "Show FastFuels Trees", value = TRUE)),
+          column(6, checkboxInput("showCustomTrees", "Show Custom Trees", value = TRUE))
+        ),
+        # create two sub-panels, one for ff, one for custom
+        tabsetPanel(
+          tabPanel("Inventory from FastFuels", 
+                   br(),
+                   actionButton("removeFFTreesByPolygon", "Remove Trees in polygon", disabled=FALSE),
+                   actionButton("addFFTreesByPolygon", "Add Trees in polygon", disabled=FALSE),
+                   fluidRow(
+#                     column(6, sliderInput("ffTreeHeight", "Tree Height", min = 0, max = 60, value = c(0,60)), 
+                     column(6, uiOutput("ff_ht_slider_ui"), 
+                                   actionButton("resetFFTreeInventory", "Reset", disabled=FALSE)),
+                     column(6, plotOutput("ffHeightHist", width="250px", height="200px"))
+                   ),
+          ),
+          tabPanel("Optional: Your Custom Inventory", 
+                   br(),
+                   textInput("customTreeInventoryFile", "Custom Inventory File", value="tree_inventory_test1_custom.csv"),
+                   actionButton("loadCustomTreeInventory", "Load", disabled=FALSE),
+                   actionButton("cropCustomPolygon", "Crop", disabled=FALSE),
+
+                   actionButton("removeCustomTreesByPolygon", "Remove Trees in polygon", disabled=FALSE),
+                   fluidRow(
+#                     column(6, sliderInput("customTreeHeight", "Tree Height", min = 0, max = 60, value = c(0,60)), 
+                     column(6, uiOutput("custom_ht_slider_ui"), 
+                               actionButton("resetCustomTreeInventory", "Reset", disabled=FALSE)),
+                     column(6, plotOutput("customHeightHist", width="250px", height="200px"))
+                   ),
+          )
+        ),
+        actionButton("mergeInventories", "Merge Custom into FF", disabled=FALSE),
+        actionButton("uploadInventory", "Upload Modified FF Inventory", disabled=FALSE),
         verbatimTextOutput("area"),
+
+          #plotOutput("distPlot"), 
+#           verbatimTextOutput("polygon_coords"),
 #        leafletOutput("mapWithTrees"),
-        checkboxInput("showFFTrees", "Show FastFuels Trees", value = TRUE),
-        checkboxInput("showCustomTrees", "Show Custom Trees", value = TRUE),
-        actionButton("clearMap", "Clear Map", disabled=FALSE), 
-        actionButton("cropCustomPolygon", "Crop Custom", disabled=FALSE),
-        actionButton("removeFFTrees", "Remove FF Trees", disabled=FALSE),
         # add a dropdown of tree attributes, will fill in options from tree list data once loaded. 
-        selectInput("customTreeAttribute", "Tree Attribute", choices=NULL),
-        sliderInput("customTreeAttributeChange", "Change Tree Attribute by %", min = 0, max = 200, value = 100),
+        # selectInput("customTreeAttribute", "Tree Attribute", choices=NULL),
+        # sliderInput("customTreeAttributeChange", "Change Tree Attribute by %", min = 0, max = 200, value = 100),
         # add hist
-        plotOutput("attributeHist")
       )
     )
 )
