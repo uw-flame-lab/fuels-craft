@@ -697,7 +697,7 @@ function(input, output, session) {
           }
           hist(rv$ff_data_temp$HT, col = currentColor, border = "grey",
                breaks = rv$ff_breaks, ylim = rv$ff_hist_ylim, xlim = c(0, ceiling(rv$ff_max_HT)),
-               xlab = "Tree Heights (HT)", main = "Tree Heights")
+               xlab = "Tree Heights (HT)", main = paste0("Tree Heights ", length(rv$ff_data_temp$HT)))
         })
       }
     }
@@ -745,7 +745,7 @@ function(input, output, session) {
           }
           hist(rv$custom_data_temp$HT, col = currentColor, border = "grey",
                breaks = rv$custom_breaks, ylim = rv$custom_hist_ylim, xlim = c(0, ceiling(rv$custom_max_HT)),
-               xlab = "Tree Heights (HT)", main = "Tree Heights")
+               xlab = "Tree Heights (HT)", main = paste0("Tree Heights ", length(rv$custom_data_temp$HT)))
         })
       }
     }
