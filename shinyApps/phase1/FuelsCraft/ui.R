@@ -70,8 +70,7 @@ fluidPage(
                    actionButton("removeFFTreesByPolygon", "Remove Trees in polygon", disabled=FALSE),
                    actionButton("addFFTreesByPolygon", "Add Trees in polygon", disabled=FALSE),
                    fluidRow(
-#                     column(6, sliderInput("ffTreeHeight", "Tree Height", min = 0, max = 60, value = c(0,60)), 
-                     column(6, uiOutput("ff_ht_slider_ui"), 
+                     column(6, sliderInput("ffTreeHeight", "Tree Height", min = 0, max = 60, value = c(0,60)), 
                                    actionButton("resetFFTreeInventory", "Reset", disabled=FALSE)),
                      column(6, plotOutput("ffHeightHist", width="250px", height="200px"))
                    ),
@@ -84,8 +83,7 @@ fluidPage(
 
                    actionButton("removeCustomTreesByPolygon", "Remove Trees in polygon", disabled=FALSE),
                    fluidRow(
-#                     column(6, sliderInput("customTreeHeight", "Tree Height", min = 0, max = 60, value = c(0,60)), 
-                     column(6, uiOutput("custom_ht_slider_ui"), 
+                     column(6, sliderInput("customTreeHeight", "Tree Height", min = 0, max = 60, value = c(0,60)), 
                                actionButton("resetCustomTreeInventory", "Reset", disabled=FALSE)),
                      column(6, plotOutput("customHeightHist", width="250px", height="200px"))
                    ),

@@ -576,9 +576,6 @@ function(input, output, session) {
       rv$ff_data_temp <- rv$ff_data
       rv$ff_polygon = res$polygon
       rv$ff_max_HT = max(rv$ff_data$HT, na.rm = TRUE)
-      
-      
-#      updateSliderInput(session, "ffTreeHeight", value = c(0, ceiling(rv$ff_max_HT)), max=ceiling(rv$ff_max_HT))
     }
     setCustomTreeInventory <- function() {
       res <- getData(rv$custom_tree_inventory)
@@ -591,8 +588,6 @@ function(input, output, session) {
       rv$custom_data_temp <- rv$custom_data
       rv$custom_polygon = res$polygon
       rv$custom_max_HT = max(rv$custom_data$HT, na.rm = TRUE)
-
-#      updateSliderInput(session, "customTreeHeight", value = c(0, ceiling(rv$custom_max_HT)), max=ceiling(rv$custom_max_HT))
     }
 
     clearMapFF <- function() {
@@ -612,8 +607,10 @@ function(input, output, session) {
       clearMapCustom()
       
       if(!is.null(rv$ff_tree_inventory)) {
+        initializeFFHeightSlider = FALSE
         if (is.null(rv$ff_data)) {
           setFFTreeInventory()
+          initializeFFHeightSlider = TRUE
         }
         bounding_polygon = rv$ff_polygon
 #        bounding_rect_polygon_ff = getBoundingRect(bounding_polygon)
@@ -621,14 +618,15 @@ function(input, output, session) {
 #        proxy %>% addPolygons(data = bounding_rect_polygon_ff, group="outline_ff", fill=FALSE, color="blue", weight=2)
         proxy %>% addPolygons(data = bounding_polygon, group="outline_ff", fill=FALSE, color="blue", weight=2)
         updateMapFF()
-        # initialize the ff ht slider
-        output$ff_ht_slider_ui <- renderUI({
-          sliderInput("ffTreeHeight","Tree Height", min = 0, value = c(0, ceiling(rv$ff_max_HT)), max=ceiling(rv$ff_max_HT))
-        })
+        if(initializeFFHeightSlider) {
+          updateSliderInput(session, "ffTreeHeight", min = 0, value = c(0, ceiling(rv$ff_max_HT)), max=ceiling(rv$ff_max_HT))
+        }
       }
       if(!is.null(rv$custom_tree_inventory)) {
+        initializeCustomHeightSlider = FALSE
         if (is.null(rv$custom_data)) {
           setCustomTreeInventory()
+          initializeCustomHeightSlider = TRUE
           # populate the custom tree attribute dropdown with the column names
 #          updateSelectInput(session, "customTreeAttribute", choices = colnames(rv$custom_data))
         }
@@ -636,10 +634,9 @@ function(input, output, session) {
         proxy <- leafletProxy("map")
         proxy %>% addPolygons(data = bounding_polygon, group="outline_custom", fill=FALSE, color="limegreen", weight=2)
         updateMapCustom()
-        # initialize the custom ht slider
-        output$custom_ht_slider_ui <- renderUI({
-          sliderInput("customTreeHeight","Tree Height", min = 0, value = c(0, ceiling(rv$custom_max_HT)), max=ceiling(rv$custom_max_HT))
-        })
+        if(initializeCustomHeightSlider) {
+          updateSliderInput(session, "customTreeHeight", min = 0, value = c(0, ceiling(rv$custom_max_HT)), max=ceiling(rv$custom_max_HT))
+        }
       }
     }
     
