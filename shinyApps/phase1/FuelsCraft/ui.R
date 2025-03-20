@@ -91,6 +91,7 @@ fluidPage(
         ),
         actionButton("mergeInventories", "Merge Custom into FF", disabled=FALSE),
         actionButton("uploadInventory", "Upload Modified FF Inventory", disabled=FALSE),
+        actionButton("saveInventory", "Save Inventory CSV", disabled=FALSE),
         verbatimTextOutput("area"),
 
           #plotOutput("distPlot"), 

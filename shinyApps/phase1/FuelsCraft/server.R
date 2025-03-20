@@ -143,10 +143,6 @@ function(input, output, session) {
       rv$custom_data <- rv$custom_data[within_polygon, ]
       rv$custom_data2 <- rv$custom_data
       
-      # save the custom tree inventory to a file with a timestamp
-      # timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-      # write.csv(rv$custom_data, paste0("tree_inventory_custom_", timestamp, ".csv"), row.names = FALSE)
-
       # update the map
       loadTreeInventory()
     })
@@ -167,10 +163,6 @@ function(input, output, session) {
       # Subset the dataframe using the logical vector
       rv$ff_data2 <- rv$ff_data2[!within_polygon, ]
 
-      # save the ff tree inventory to a file with a timestamp
-#      timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-#      write.csv(rv$ff_data_temp, paste0("tree_inventory_ff_", timestamp, ".csv"), row.names = FALSE)
-      
       updateMapFF()
     })
     
@@ -196,10 +188,6 @@ function(input, output, session) {
     observeEvent(input$mergeInventories, {
       # merge rv$ff_data2 and rv$custom_data2
       merged_data <- rbind(rv$ff_data_temp, rv$custom_data_temp)
-      
-      # save the merged tree inventory to a file with a timestamp
-      # timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-      # write.csv(merged_data, paste0("tree_inventory_merged_", timestamp, ".csv"), row.names = FALSE)
       
       rv$ff_data <- merged_data
       rv$ff_data2 <- merged_data
@@ -238,6 +226,16 @@ function(input, output, session) {
       )
       print(response)
       print(content(response, "text"))
+    })
+    
+    observeEvent(input$saveInventory, {
+      if(is.null(rv$ff_data_temp)) {
+        return(NULL)
+      }
+      
+      # save the merged tree inventory to a file with a timestamp
+      timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+      write.csv(rv$ff_data_temp, paste0("tree_inventory_", input$domainId, "_", timestamp, ".csv"), row.names = FALSE)
     })
 
     # handle createDomain button click
