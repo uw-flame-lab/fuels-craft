@@ -7,8 +7,6 @@
 #    https://shiny.posit.co/
 #
 
-library(shiny)
-library(RColorBrewer)
 
 
 # Define server logic required to draw a histogram
@@ -185,9 +183,42 @@ function(input, output, session) {
       updateMapCustom()
     })
     
+    observeEvent(input$addFFTreesByPolygon, {
+      if(is.null(rv$polygon)) {
+        return(NULL)
+      }
+      # get a sample trees from existing rv$ff_data2
+      new_trees <- rv$ff_data2[sample(nrow(rv$ff_data2), input$ffTreeCountToAdd), ]
+      
+      # Generate random points within the polygon
+      sf_object <- geojsonsf::geojson_sf(rv$polygon)
+      sample_points <- st_sample(sf_object, size = as.numeric(input$ffTreeCountToAdd), type = "random")
+      
+      # Convert sample points to a data frame with Longitude and Latitude
+      coords <- st_coordinates(sample_points)
+#      new_trees <- data.frame(Longitude = coords[, 1], Latitude = coords[, 2], new_trees)
+      new_trees$Longitude <- coords[, 1]
+      new_trees$Latitude <- coords[, 2]
+
+      # change the Longitude and Latitude of the new trees to be within the polygon
+      # Convert the polygon to a bounding box
+      # sf_object <- geojsonsf::geojson_sf(rv$polygon)
+      # bounding_box <- st_bbox(sf_object)
+      # new_trees$Longitude <- runif(nrow(new_trees), bounding_box["xmin"], bounding_box["xmax"])
+      # new_trees$Latitude <- runif(nrow(new_trees), bounding_box["ymin"], bounding_box["ymax"])
+
+      # Add new trees to rv$ff_data2
+      rv$ff_data2 <- rbind(rv$ff_data2, new_trees)
+      
+      updateMapFF()
+    })
+    
     observeEvent(input$mergeInventories, {
       # merge rv$ff_data2 and rv$custom_data2
       merged_data <- rbind(rv$ff_data_temp, rv$custom_data_temp)
+      
+      # merge or replace trees inside custom polygon? 
+      # I guess merge is ok since user can remove trees from ff_data. 
       
       rv$ff_data <- merged_data
       rv$ff_data2 <- merged_data
@@ -486,7 +517,11 @@ function(input, output, session) {
         `api-key` = input$api_key,
         `Content-Type` = "application/json"
       )
+      # default to zip (QUIC-Fire) input format
       url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/grids/exports/QUIC-Fire")
+      if (input$qfInputFormat == "zarr") {
+        url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/grids/exports/zarr")
+      }
       response <- POST(url, headers)
       contentResponse = content(response, "parsed")
       showPageSpinner()
@@ -528,6 +563,80 @@ function(input, output, session) {
       {
         updateSliderInput(session, "customTreeHeight", value = c(0, ceiling(rv$custom_max_HT)))
       }
+    })
+    
+    observeEvent(input$create3DVoxelPlot, {
+      # download zarr.zip file from input$inputFiles url
+      # unzip it to a temp directory
+      # read the zarr file and create a 3D voxel plot
+      # create a temp directory
+      temp_dir <- tempdir()
+      # download the xxx.zarr.zip file
+#      download.file(input$inputFiles, file.path(temp_dir, "zarr.zip"))
+      # unzip the file
+      unzip("/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/grids.zarr.zip", exdir = temp_dir)
+#      unzip(file.path(temp_dir, "....zarr.zip"), exdir = temp_dir)
+      # read the zarr file
+      zarr_file <- list.files(temp_dir, pattern = "\\.zarr$", full.names = TRUE)
+      # read the zarr file using stars
+      
+
+      
+      # Load the data
+      file_name <- "/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/grids.zarr.zip"
+      # check if file exists
+      if (!file.exists(file_name)) {
+        stop("File does not exist")
+      }
+      
+      unzip("/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/grids.zarr.zip", exdir = "/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/")
+      
+      
+      # Define the path to the unzipped Zarr directory
+      unzipped_dir <- "/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/tree"
+      
+      # Read the Zarr data
+      zarr_data <- read_stars(unzipped_dir, sub = "bulkDensity")
+      
+      # Convert the stars object to an array
+      array_data <- as.array(zarr_data)
+      
+      # Create a grid
+      dimensions <- dim(array_data) + 1  # Add 1 to dimensions
+      origin <- c(0, 0, 0)
+      spacing <- c(2, 2, 2)
+      
+      # Flatten the array in Fortran order (column-major)
+      array_data_flat <- as.vector(aperm(array_data, c(3, 2, 1)))
+      
+      # Create a data frame for visualization
+      df <- expand.grid(x = 1:dimensions[1], y = 1:dimensions[2], z = 1:dimensions[3])
+      df$bulk_density <- array_data_flat
+      
+      # Threshold the data to focus on areas with significant biomass
+      threshold <- 0.01  # Adjust this value based on your data
+      df <- df[df$bulk_density > threshold, ]
+      
+      # Plot the data
+      # p <- plot3d(df$x, df$y, df$z, col = heat.colors(length(df$bulk_density))[rank(df$bulk_density)], size = 3)
+      # axes3d()
+      # title3d("X", "Y", "Z", "Bulk Density (kg/m3)")
+
+      
+            
+      # Create a 3D plot using plotly
+      # p <- plot_ly(data = df, x = ~x, y = ~y, z = ~z, color = ~bulk_density, colors = "Viridis") %>%
+      #   add_markers() %>%
+      #   layout(scene = list(xaxis = list(title = "X"),
+      #                       yaxis = list(title = "Y"),
+      #                       zaxis = list(title = "Z")),
+      #          title = "3D Voxel Plot of Bulk Density")
+      
+      output$voxel3dPlot <- renderPlot({
+        plot3d(df$x, df$y, df$z, col = heat.colors(length(df$bulk_density))[rank(df$bulk_density)], size = 3)
+        axes3d()
+        title3d("X", "Y", "Z", "Bulk Density (kg/m3)")
+      })
     })
     
     ####################### HELPER FUNCTIONS #######################
@@ -697,7 +806,7 @@ function(input, output, session) {
           }
           hist(rv$ff_data_temp$HT, col = currentColor, border = "grey",
                breaks = rv$ff_breaks, ylim = rv$ff_hist_ylim, xlim = c(0, ceiling(rv$ff_max_HT)),
-               xlab = "Tree Heights (HT)", main = paste0("Tree Heights ", length(rv$ff_data_temp$HT)))
+               xlab = "Tree Heights (HT)", main = paste0("Tree Count: ", length(rv$ff_data_temp$HT)))
         })
       }
     }
@@ -745,7 +854,7 @@ function(input, output, session) {
           }
           hist(rv$custom_data_temp$HT, col = currentColor, border = "grey",
                breaks = rv$custom_breaks, ylim = rv$custom_hist_ylim, xlim = c(0, ceiling(rv$custom_max_HT)),
-               xlab = "Tree Heights (HT)", main = paste0("Tree Heights ", length(rv$custom_data_temp$HT)))
+               xlab = "Tree Heights (HT)", main = paste0("Tree Count: ", length(rv$custom_data_temp$HT)))
         })
       }
     }
