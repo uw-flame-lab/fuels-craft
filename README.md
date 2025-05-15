@@ -1,15 +1,9 @@
 # fuels-craft
 FuelsCraft project
 
-Resources: 
----
-[Google Drive](https://drive.google.com/drive/folders/1FvHrjbXd3RESTXQ_5tY_81TIiaiZ6TrH)
 
-[Use Cases PowerPoint](https://github.com/user-attachments/files/16732073/FC2FF_Workflows.pptx)
 
 FastFuels Interactive API: https://api.fastfuels.silvxlabs.com/docs
-
-API Key: 114b3607f17d4cf3b3bdc472694aa3b6
 
 FastFuels API Object Heirarchy
 ---
