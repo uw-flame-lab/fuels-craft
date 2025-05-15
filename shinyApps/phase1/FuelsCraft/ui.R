@@ -36,7 +36,7 @@ fluidPage(
         actionButton("loadCustomTreeInventory", "Load", disabled=FALSE),
         actionButton("cropCustomPolygon", "Crop", disabled=FALSE),
         h4("FastFuels API"),
-        textInput("api_key", "API Key", value = "b6a21fbe22c54a1890ce0d2252d2f584"),
+        textInput("api_key", "API Key", value = ""),
         actionButton("createDomain", "Create Domain", disabled=TRUE), 
         textInput("domainId", "Domain ID", value=""),
         actionButton("createRoadFeature", "Create Road Feature", disabled=TRUE),
