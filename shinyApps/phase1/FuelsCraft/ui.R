@@ -50,7 +50,7 @@ fluidPage(
         verbatimTextOutput("treeInventory"),
         actionButton("exportTreeInventory", "Export Tree Inventory", disabled=TRUE),
         verbatimTextOutput("exportTreeInventory"),
-        
+        h6("Optional: edit/merge/upload Tree Inventories using the tools to the right"),
         actionButton("createTreeGrid", "Create Tree Grid", disabled=TRUE),
         verbatimTextOutput("treeGrid"),
         actionButton("createSurfaceGrid", "Create Surface Grid", disabled=TRUE),

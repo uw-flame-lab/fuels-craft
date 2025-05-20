@@ -264,20 +264,34 @@ function(input, output, session) {
       fn = paste0("tree_inventory_uploaded_", timestamp, ".csv")
       write.csv(rv$ff_data_temp, fn, row.names = FALSE)
       
+      # get signed url for uploading the csv file
       headers <- add_headers(
         accept = "application/json",
-        `api-key` = input$api_key
+        `api-key` = input$api_key,
+        `Content-Type` = "application/json"
       )
-      url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/inventories/tree/upload")
+      url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/inventories/tree")
+      response <- POST(url, headers, body = '{"sources": ["file"]}')
+      signed_url_response = content(response, "parsed")
+
+      file_path <- fn
+      signed_url <- signed_url_response$file$url
+
+      headers <- as.character(unlist(signed_url_response$file$headers))
+      names(headers) <- names(signed_url_response$file$headers)
+
+      # Read the file as binary
+      file_data <- upload_file(file_path, type = "application/octet-stream")
       
-      files = list()
-      files <- list(uploadFile = upload_file(fn, type = "text/csv"))
-      response <- POST(
-        url, headers,
-        body = list(uploadFile = upload_file(fn)),
-        encode = "multipart"
+      # Perform the PUT request
+      response <- PUT(
+        url = signed_url,
+        body = file_data,
+        add_headers(.headers = headers)
       )
-      print(response)
+      
+      # Check the response
+      print(status_code(response))
       print(content(response, "text"))
     })
     
