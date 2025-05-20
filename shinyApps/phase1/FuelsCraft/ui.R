@@ -104,8 +104,8 @@ fluidPage(
         actionButton("uploadInventory", "Upload Modified FF Inventory", disabled=FALSE),
         actionButton("saveInventory", "Save Inventory CSV", disabled=FALSE),
         verbatimTextOutput("area"), 
-        actionButton("create3DVoxelPlot", "Visualize Voxels", disabled=FALSE),
-        plotOutput("voxel3dPlot", width="100%", height="300px") %>% withSpinner(color="#0dc5c1"),
+#        actionButton("create3DVoxelPlot", "Visualize Voxels", disabled=FALSE),
+#        plotOutput("voxel3dPlot", width="100%", height="300px") %>% withSpinner(color="#0dc5c1"),
 
           #plotOutput("distPlot"), 
 #           verbatimTextOutput("polygon_coords"),
