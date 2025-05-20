@@ -305,6 +305,14 @@ function(input, output, session) {
       geojson <- rv$polygon
       response <- POST(url, headers, body = geojson)
       contentResponse = content(response, "parsed")
+      
+      # see if contentResponse$detail exists, assume error... "API key has expired"
+      if("detail" %in% names(contentResponse))
+      {
+        updateTextInput(session, "domainId", value = contentResponse$detail)
+        return(NULL)
+      }
+      
       domain_id = contentResponse$id
       print(domain_id)
       
