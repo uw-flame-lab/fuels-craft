@@ -212,6 +212,28 @@ function(input, output, session) {
       
       updateMapFF()
     })
+
+    observeEvent(input$addCustomTreesByPolygon, {
+      if(is.null(rv$polygon)) {
+        return(NULL)
+      }
+      # get a sample trees from existing rv$ff_data2
+      new_trees <- rv$custom_data2[sample(nrow(rv$custom_data2), input$customTreeCountToAdd), ]
+      
+      # Generate random points within the polygon
+      sf_object <- geojsonsf::geojson_sf(rv$polygon)
+      sample_points <- st_sample(sf_object, size = as.numeric(input$customTreeCountToAdd), type = "random")
+      
+      # Convert sample points to a data frame with Longitude and Latitude
+      coords <- st_coordinates(sample_points)
+      new_trees$Longitude <- coords[, 1]
+      new_trees$Latitude <- coords[, 2]
+      
+      # Add new trees to rv$custom_data2
+      rv$custom_data2 <- rbind(rv$custom_data2, new_trees)
+      
+      updateMapCustom()
+    })
     
     observeEvent(input$mergeInventories, {
       # merge rv$ff_data2 and rv$custom_data2
