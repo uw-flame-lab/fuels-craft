@@ -11,7 +11,7 @@
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
-  
+
     # reactive values
     rv <- reactiveValues()
     rv$polygon <- NULL
@@ -31,11 +31,13 @@ function(input, output, session) {
     rv$ff_breaks <- NULL
     rv$custom_hist_ylim <- NULL
     rv$custom_breaks <- NULL
-  
+
     drawEmptyMap <- function() {
       map <- leaflet() %>%
         addProviderTiles("Esri.WorldImagery") %>%
-        setView(-120.15, 48.42, zoom = 12) %>%
+#        setView(-120.15, 48.42, zoom = 12) %>%   # Winthrop
+#        setView(-81.73, 32.06, zoom = 12) %>%    # Fort Stewart
+        setView(-81.708, 31.896, zoom = 12) %>%    # Fort Stewart
         addDrawToolbar(
           targetGroup = "drawn",
           polylineOptions = FALSE,
@@ -50,10 +52,10 @@ function(input, output, session) {
   #    return(map)
       renderLeaflet(map)
     }
-    
+
     output$map <- drawEmptyMap()
 #  output$map <- renderLeaflet({drawEmptyMap()})
-  
+
     observeEvent(input$map_draw_new_feature, {
       feature <- input$map_draw_new_feature
       coords <- feature$geometry$coordinates[[1]]
@@ -73,16 +75,16 @@ function(input, output, session) {
       )
       geojson_string <- toJSON(geojson_list, auto_unbox = TRUE)
       rv$polygon <- geojson_string
-      
+
       # Convert the GeoJSON string to an sf object
       sf_object <- geojsonsf::geojson_sf(geojson_string)
-      
+
       # Calculate the area of the polygon
-      area <- st_area(sf_object)      
+      area <- st_area(sf_object)
       # change area to km^2
       area <- as.numeric(area)/1000000
       units(area) <- 'km^2'
-            
+
       if (as.numeric(area) < 16) {
         outputString <- paste0("area: ",area, " (ok, less than 16 km^2)")
         output$area <- renderPrint({outputString})
@@ -93,7 +95,7 @@ function(input, output, session) {
         updateActionButton(session, "createDomain", disabled = TRUE)
       }
     })
-    
+
     # handle clearMap button click
     observeEvent(input$clearMap, {
       rv$polygon <- NULL
@@ -119,81 +121,95 @@ function(input, output, session) {
       updateActionButton(session, "getInputFiles", disabled = TRUE)
       output$map <- drawEmptyMap()
     })
-    
+
+    observeEvent(input$zone_crs, {
+      if(is.null(rv$polygon)) {
+        return(NULL)
+      }
+      if(!is.null(rv$ff_tree_inventory))
+      {
+        setFFTreeInventory()
+      }
+      if(!is.null(rv$custom_tree_inventory)) {
+        setCustomTreeInventory()
+      }
+      loadTreeInventory()
+    })
+
     # handle cropCustomPolygon button click
     observeEvent(input$cropCustomPolygon, {
       if(is.null(rv$polygon)) {
         return(NULL)
       }
-      
+
       # convert rv$polygon to sf object, update rv$custom_polygon
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
       rv$custom_polygon <- sf_object
-      
+
       # get only the trees that are in rv$polygon and save to rv$custom_tree_inventory
       # Convert custom_data to sf object
       custom_data_sf <- st_as_sf(rv$custom_data, coords = c("Longitude", "Latitude"), crs = 4326)
-      
+
       # Check if points are within the polygon
       within_polygon <- sapply(st_within(custom_data_sf, rv$custom_polygon), length) > 0
-      
+
       # Subset the dataframe using the logical vector
       rv$custom_data <- rv$custom_data[within_polygon, ]
       rv$custom_data2 <- rv$custom_data
-      
+
       # update the map
       loadTreeInventory()
     })
-    
+
     observeEvent(input$removeFFTreesByPolygon, {
       if(is.null(rv$polygon)) {
         return(NULL)
       }
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
-      
+
       # remove trees that are in rv$polygon from rv$ff_data
       # Convert ff_data to sf object
       ff_data_sf <- st_as_sf(rv$ff_data2, coords = c("Longitude", "Latitude"), crs = 4326)
-      
+
       # Check if points are within the polygon
       within_polygon <- sapply(st_within(ff_data_sf, sf_object), length) > 0
-      
+
       # Subset the dataframe using the logical vector
       rv$ff_data2 <- rv$ff_data2[!within_polygon, ]
 
       updateMapFF()
     })
-    
+
     observeEvent(input$removeCustomTreesByPolygon, {
       if(is.null(rv$polygon)) {
         return(NULL)
       }
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
-      
+
       # remove trees that are in rv$polygon from rv$custom_data
       # Convert custom_data to sf object
       custom_data_sf <- st_as_sf(rv$custom_data2, coords = c("Longitude", "Latitude"), crs = 4326)
-      
+
       # Check if points are within the polygon
       within_polygon <- sapply(st_within(custom_data_sf, sf_object), length) > 0
-      
+
       # Subset the dataframe using the logical vector
       rv$custom_data2 <- rv$custom_data2[!within_polygon, ]
-      
+
       updateMapCustom()
     })
-    
+
     observeEvent(input$addFFTreesByPolygon, {
       if(is.null(rv$polygon)) {
         return(NULL)
       }
       # get a sample trees from existing rv$ff_data2
       new_trees <- rv$ff_data2[sample(nrow(rv$ff_data2), input$ffTreeCountToAdd), ]
-      
+
       # Generate random points within the polygon
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
       sample_points <- st_sample(sf_object, size = as.numeric(input$ffTreeCountToAdd), type = "random")
-      
+
       # Convert sample points to a data frame with Longitude and Latitude
       coords <- st_coordinates(sample_points)
 #      new_trees <- data.frame(Longitude = coords[, 1], Latitude = coords[, 2], new_trees)
@@ -209,7 +225,7 @@ function(input, output, session) {
 
       # Add new trees to rv$ff_data2
       rv$ff_data2 <- rbind(rv$ff_data2, new_trees)
-      
+
       updateMapFF()
     })
 
@@ -219,29 +235,29 @@ function(input, output, session) {
       }
       # get a sample trees from existing rv$ff_data2
       new_trees <- rv$custom_data2[sample(nrow(rv$custom_data2), input$customTreeCountToAdd), ]
-      
+
       # Generate random points within the polygon
       sf_object <- geojsonsf::geojson_sf(rv$polygon)
       sample_points <- st_sample(sf_object, size = as.numeric(input$customTreeCountToAdd), type = "random")
-      
+
       # Convert sample points to a data frame with Longitude and Latitude
       coords <- st_coordinates(sample_points)
       new_trees$Longitude <- coords[, 1]
       new_trees$Latitude <- coords[, 2]
-      
+
       # Add new trees to rv$custom_data2
       rv$custom_data2 <- rbind(rv$custom_data2, new_trees)
-      
+
       updateMapCustom()
     })
-    
+
     observeEvent(input$mergeInventories, {
       # merge rv$ff_data2 and rv$custom_data2
       merged_data <- rbind(rv$ff_data_temp, rv$custom_data_temp)
-      
-      # merge or replace trees inside custom polygon? 
-      # I guess merge is ok since user can remove trees from ff_data. 
-      
+
+      # merge or replace trees inside custom polygon?
+      # I guess merge is ok since user can remove trees from ff_data.
+
       rv$ff_data <- merged_data
       rv$ff_data2 <- merged_data
       rv$ff_data_temp <- merged_data
@@ -249,21 +265,21 @@ function(input, output, session) {
       rv$custom_data <- NULL
       rv$custom_data2 <- NULL
       rv$custom_data_temp <- NULL
-      
+
       # update the map
       loadTreeInventory()
     })
-    
+
     observeEvent(input$uploadInventory, {
       if(is.null(rv$ff_data_temp)) {
         return(NULL)
       }
-      
+
       # save the merged tree inventory to a file with a timestamp
       timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
       fn = paste0("tree_inventory_uploaded_", timestamp, ".csv")
       write.csv(rv$ff_data_temp, fn, row.names = FALSE)
-      
+
       # get signed url for uploading the csv file
       headers <- add_headers(
         accept = "application/json",
@@ -282,24 +298,24 @@ function(input, output, session) {
 
       # Read the file as binary
       file_data <- upload_file(file_path, type = "application/octet-stream")
-      
+
       # Perform the PUT request
       response <- PUT(
         url = signed_url,
         body = file_data,
         add_headers(.headers = headers)
       )
-      
+
       # Check the response
       print(status_code(response))
       print(content(response, "text"))
     })
-    
+
     observeEvent(input$saveInventory, {
       if(is.null(rv$ff_data_temp)) {
         return(NULL)
       }
-      
+
       # save the merged tree inventory to a file with a timestamp
       timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
       write.csv(rv$ff_data_temp, paste0("tree_inventory_", input$domainId, "_", timestamp, ".csv"), row.names = FALSE)
@@ -314,28 +330,28 @@ function(input, output, session) {
         `Content-Type` = "application/json"
       )
       url <- "https://api.fastfuels.silvxlabs.com/v1/domains"
-      
+
       # create geojson from rv$polygon
       geojson <- rv$polygon
       response <- POST(url, headers, body = geojson)
       contentResponse = content(response, "parsed")
-      
+
       # see if contentResponse$detail exists, assume error... "API key has expired"
       if("detail" %in% names(contentResponse))
       {
         updateTextInput(session, "domainId", value = contentResponse$detail)
         return(NULL)
       }
-      
+
       domain_id = contentResponse$id
       print(domain_id)
-      
+
       if (domain_id != "") {
         updateTextInput(session, "domainId", value = domain_id)
         updateActionButton(session, "createRoadFeature", disabled = FALSE)
       }
     })
-    
+
     # handle createRoadFeature button click
     observeEvent(input$createRoadFeature, {
       headers <- add_headers(
@@ -380,7 +396,7 @@ function(input, output, session) {
       output$waterFeature <- renderPrint("completed")
       updateActionButton(session, "createTreeInventory", disabled = FALSE)
     })
-        
+
     # handle createTreeInventory button click
     observeEvent(input$createTreeInventory, {
       headers <- add_headers(
@@ -389,27 +405,27 @@ function(input, output, session) {
         `Content-Type` = "application/json"
       )
       url = paste0("https://api.fastfuels.silvxlabs.com/v1/domains/", input$domainId, "/inventories/tree")
-      
+
       bodyContent = paste0('{"sources": ["TreeMap"], "TreeMap": {"version": "', input$treeMapVersion, '"}, "featureMasks": ["road", "water"]}')
       if(input$treeMapStyle == "raw") {
         # do nothing
       } else if (input$treeMapStyle == "fusion") {
         bodyContent = paste0('{"sources": ["TreeMap"], "TreeMap": {
-                                              "version": "', input$treeMapVersion, '", "seed":123456789, 
-                                              "canopyHeightMapConfiguration": {"source":"Meta2024"}}, 
+                                              "version": "', input$treeMapVersion, '", "seed":123456789,
+                                              "canopyHeightMapConfiguration": {"source":"Meta2024"}},
                                               "featureMasks": ["road", "water"]
                                               }')
       }
-      
+
 #      response <- POST(url, headers, body = '{"sources": ["TreeMap"], "featureMasks": ["road", "water"]}')
-      # response <- POST(url, headers, body = '{"sources": ["TreeMap"], 
+      # response <- POST(url, headers, body = '{"sources": ["TreeMap"],
       #                                         "TreeMap": {
-      #                                         "version":"2014", 
-      #                                         "seed":123456789, 
+      #                                         "version":"2014",
+      #                                         "seed":123456789,
       #                                         "canopyHeightMapConfiguration": {"source":"Meta2024"}
-      #                                         } 
+      #                                         }
       #                                         }')
-      
+
       response <- POST(url, headers, body = bodyContent)
       contentResponse = content(response, "parsed")
       showPageSpinner()
@@ -423,7 +439,7 @@ function(input, output, session) {
       output$treeInventory <- renderPrint("completed")
       updateActionButton(session, "exportTreeInventory", disabled = FALSE)
     })
-    
+
     # handle exportTreeInventory button click
     observeEvent(input$exportTreeInventory, {
       headers <- add_headers(
@@ -448,7 +464,7 @@ function(input, output, session) {
       updateActionButton(session, "loadCustomTreeInventory", disabled = FALSE)
       updateActionButton(session, "createTreeGrid", disabled = FALSE)
     })
-    
+
     # handle loadFFTreeInventory button click
     observeEvent(input$loadFFTreeInventory, {
       rv$ff_tree_inventory <- "tree_inventory_test1.csv"
@@ -456,21 +472,21 @@ function(input, output, session) {
       updateActionButton(session, "loadCustomTreeInventory", disabled = FALSE)
       updateActionButton(session, "createTreeGrid", disabled = FALSE)
     })
-    
+
     # handle loadCustomTreeInventory button click
     observeEvent(input$loadCustomTreeInventory, {
       rv$custom_tree_inventory <- input$customTreeInventoryFile
       loadTreeInventory()
       # set rv$polygon based on rv$custom_polygon
       if (!is.null(rv$custom_polygon)) {
-        # get coordinates from rv$custom_polygon which was calculated from: 
+        # get coordinates from rv$custom_polygon which was calculated from:
         # rv$custom_polygon <- st_as_sf(convex_hull)
-        
+
         rv$polygon <- geojson_from_coords(rv$custom_polygon$x[[1]][[1]])
       }
       updateActionButton(session, "createDomain", disabled = FALSE)
     })
-    
+
     observe({
       proxy <- leafletProxy("map")
       if (input$showFFTrees) {
@@ -484,7 +500,7 @@ function(input, output, session) {
         proxy %>% hideGroup("custom_circles")
       }
     })
-    
+
     # handle createTreeGrid button click
     observeEvent(input$createTreeGrid, {
       headers <- add_headers(
@@ -509,7 +525,7 @@ function(input, output, session) {
       output$treeGrid <- renderPrint("completed")
       updateActionButton(session, "createSurfaceGrid", disabled = FALSE)
     })
-    
+
     # handle createSurfaceGrid button click
     observeEvent(input$createSurfaceGrid, {
       headers <- add_headers(
@@ -531,7 +547,7 @@ function(input, output, session) {
       output$surfaceGrid <- renderPrint("completed")
       updateActionButton(session, "createTopographyGrid", disabled = FALSE)
     })
-    
+
     # handle createTopographyGrid button click
     observeEvent(input$createTopographyGrid, {
       headers <- add_headers(
@@ -553,7 +569,7 @@ function(input, output, session) {
       output$topographyGrid <- renderPrint("completed")
       updateActionButton(session, "getInputFiles", disabled = FALSE)
     })
-    
+
     # handle getInputFiles button click
     observeEvent(input$getInputFiles, {
       headers <- add_headers(
@@ -578,17 +594,17 @@ function(input, output, session) {
       hidePageSpinner()
       output$inputFiles <- renderPrint(contentResponse$signedUrl)
     })
-    
+
     # handle change to ffTreeHeight slider
     observeEvent(input$ffTreeHeight, {
         updateMapFF()
     })
-    
+
     # handle change to customTreeHeight slider
     observeEvent(input$customTreeHeight, {
         updateMapCustom()
     })
-    
+
     # resetFFTreeInventory
     observeEvent(input$resetFFTreeInventory, {
       rv$ff_data2 <- rv$ff_data
@@ -598,7 +614,7 @@ function(input, output, session) {
         updateSliderInput(session, "ffTreeHeight", value = c(0, ceiling(rv$ff_max_HT)))
       }
     })
-    
+
     # resetCustomTreeInventory
     observeEvent(input$resetCustomTreeInventory, {
       rv$custom_data2 <- rv$custom_data
@@ -608,7 +624,7 @@ function(input, output, session) {
         updateSliderInput(session, "customTreeHeight", value = c(0, ceiling(rv$custom_max_HT)))
       }
     })
-    
+
     observeEvent(input$create3DVoxelPlot, {
       # download zarr.zip file from input$inputFiles url
       # unzip it to a temp directory
@@ -623,51 +639,51 @@ function(input, output, session) {
       # read the zarr file
       zarr_file <- list.files(temp_dir, pattern = "\\.zarr$", full.names = TRUE)
       # read the zarr file using stars
-      
 
-      
+
+
       # Load the data
       file_name <- "/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/grids.zarr.zip"
       # check if file exists
       if (!file.exists(file_name)) {
         stop("File does not exist")
       }
-      
+
       unzip("/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/grids.zarr.zip", exdir = "/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/")
-      
-      
+
+
       # Define the path to the unzipped Zarr directory
       unzipped_dir <- "/Users/briandrye/repos/uw/fuels-craft/fuels-craft/shinyApps/phase1/FuelsCraft/tree"
-      
+
       # Read the Zarr data
       zarr_data <- read_stars(unzipped_dir, sub = "bulkDensity")
-      
+
       # Convert the stars object to an array
       array_data <- as.array(zarr_data)
-      
+
       # Create a grid
       dimensions <- dim(array_data) + 1  # Add 1 to dimensions
       origin <- c(0, 0, 0)
       spacing <- c(2, 2, 2)
-      
+
       # Flatten the array in Fortran order (column-major)
       array_data_flat <- as.vector(aperm(array_data, c(3, 2, 1)))
-      
+
       # Create a data frame for visualization
       df <- expand.grid(x = 1:dimensions[1], y = 1:dimensions[2], z = 1:dimensions[3])
       df$bulk_density <- array_data_flat
-      
+
       # Threshold the data to focus on areas with significant biomass
       threshold <- 0.01  # Adjust this value based on your data
       df <- df[df$bulk_density > threshold, ]
-      
+
       # Plot the data
       # p <- plot3d(df$x, df$y, df$z, col = heat.colors(length(df$bulk_density))[rank(df$bulk_density)], size = 3)
       # axes3d()
       # title3d("X", "Y", "Z", "Bulk Density (kg/m3)")
 
-      
-            
+
+
       # Create a 3D plot using plotly
       # p <- plot_ly(data = df, x = ~x, y = ~y, z = ~z, color = ~bulk_density, colors = "Viridis") %>%
       #   add_markers() %>%
@@ -675,19 +691,20 @@ function(input, output, session) {
       #                       yaxis = list(title = "Y"),
       #                       zaxis = list(title = "Z")),
       #          title = "3D Voxel Plot of Bulk Density")
-      
+
       output$voxel3dPlot <- renderPlot({
         plot3d(df$x, df$y, df$z, col = heat.colors(length(df$bulk_density))[rank(df$bulk_density)], size = 3)
         axes3d()
         title3d("X", "Y", "Z", "Bulk Density (kg/m3)")
       })
     })
-    
+
     ####################### HELPER FUNCTIONS #######################
-    
+
     getData <- function(source) {
       csv_data <- read.csv(source)
-      sf_data <- st_as_sf(csv_data, coords = c("X", "Y"), crs = 32610)  # UTM Zone 10N
+
+      sf_data <- st_as_sf(csv_data, coords = c("X", "Y"), crs = as.integer(input$zone_crs))
 
       # Transform to WGS 84 (latitude and longitude)
       sf_data_wgs84 <- st_transform(sf_data, crs = 4326)
@@ -699,10 +716,10 @@ function(input, output, session) {
       # get bounding polygon of all the Lat/Long points
       convex_hull <- st_convex_hull(st_union(sf_data_wgs84))
       bounding_polygon <- st_as_sf(convex_hull)
-      
+
       return(list(csv_df = csv_data, polygon = bounding_polygon))
     }
-    
+
     # get bounding rectangle of the bounding polygon
     getBoundingRect <- function(bounding_polygon) {
       bounding_rect <- st_bbox(bounding_polygon)
@@ -710,12 +727,12 @@ function(input, output, session) {
                               bounding_rect["xmin"], bounding_rect["ymax"],
                               bounding_rect["xmax"], bounding_rect["ymax"],
                               bounding_rect["xmax"], bounding_rect["ymin"],
-                              bounding_rect["xmin"], bounding_rect["ymin"]), 
+                              bounding_rect["xmin"], bounding_rect["ymin"]),
                             ncol = 2, byrow = TRUE)
       bounding_rect_polygon <- st_polygon(list(rect_coords))
       return(bounding_rect_polygon)
     }
-    
+
     setFFTreeInventory <- function() {
       res <- getData(rv$ff_tree_inventory)
       rv$ff_data = res$csv_df
@@ -751,12 +768,12 @@ function(input, output, session) {
       proxy <- leafletProxy("map")
       proxy %>% clearGroup("custom_circles")
       proxy %>% clearGroup("outline_custom")
-    } 
-    
+    }
+
     loadTreeInventory <- function() {
       clearMapFF()
       clearMapCustom()
-      
+
       if(!is.null(rv$ff_tree_inventory)) {
         initializeFFHeightSlider = FALSE
         if (is.null(rv$ff_data)) {
@@ -790,7 +807,7 @@ function(input, output, session) {
         }
       }
     }
-    
+
     geojson_from_coords <- function(coords) {
       geojson_list <- list(
         type = "FeatureCollection",
@@ -807,20 +824,20 @@ function(input, output, session) {
       )
       return(toJSON(geojson_list, auto_unbox = TRUE))
     }
-    
+
     updateMapFF <- function() {
-      # use rv$ff_data2... 
+      # use rv$ff_data2...
       # apply HT slider filter to it
       if(!is.null(input$ffTreeHeight))
       {
         rv$ff_data_temp <- rv$ff_data2[rv$ff_data2$HT >= input$ffTreeHeight[1] & rv$ff_data2$HT <= input$ffTreeHeight[2], ]
-      }  
+      }
       if (!is.null(rv$ff_data_temp)) {
         currentColor = brewer.pal(9, "Blues")
         if(!identical(rv$ff_data_temp, rv$ff_data)) {
           currentColor = brewer.pal(9, "Greens")
         }
-        
+
         palette <- colorNumeric(
           palette = currentColor,
           domain = c(0, ceiling(rv$ff_max_HT))
@@ -833,11 +850,11 @@ function(input, output, session) {
         proxy %>% addCircles(
           data = rv$ff_data_temp,
           ~Longitude, ~Latitude,
-          color = ~palette(rv$ff_data_temp$HT), 
+          color = ~palette(rv$ff_data_temp$HT),
           radius = 3, opacity = .7,
           group="ff_circles"
         )
-        
+
         # update the histogram
         output$ffHeightHist <- renderPlot({
           if(is.null(rv$ff_data_temp$HT)){
@@ -845,7 +862,7 @@ function(input, output, session) {
           }
           hist_obj <- hist(rv$ff_data_temp$HT, breaks=9, plot = FALSE)
           if(is.null(rv$ff_hist_ylim)){
-            rv$ff_hist_ylim <- c(0, max(hist_obj$counts) * 1.1) 
+            rv$ff_hist_ylim <- c(0, max(hist_obj$counts) * 1.1)
             rv$ff_breaks <-hist_obj$breaks
           }
           hist(rv$ff_data_temp$HT, col = currentColor, border = "grey",
@@ -854,9 +871,9 @@ function(input, output, session) {
         })
       }
     }
-    
+
     updateMapCustom <- function() {
-      # use rv$custom_data2... 
+      # use rv$custom_data2...
       # apply HT slider filter to it
       if(!is.null(input$customTreeHeight))
       {
@@ -868,12 +885,12 @@ function(input, output, session) {
         if(!identical(rv$custom_data_temp, rv$custom_data)) {
           currentColor = brewer.pal(9, "Oranges")
         }
-        
+
         palette <- colorNumeric(
           palette = currentColor,
           domain = c(0, ceiling(rv$custom_max_HT))
         )
-        
+
         # update the map
         proxy <- leafletProxy("map")
 #        proxy %>% clearGroup("drawn")
@@ -881,11 +898,11 @@ function(input, output, session) {
         proxy %>% addCircles(
           data = rv$custom_data_temp,
           ~Longitude, ~Latitude,
-          color = ~palette(rv$custom_data_temp$HT), 
+          color = ~palette(rv$custom_data_temp$HT),
           radius = 3, opacity = .7,
           group="custom_circles"
         )
-        
+
         # update the histogram
         output$customHeightHist <- renderPlot({
           if(is.null(rv$custom_data_temp$HT)){
@@ -893,7 +910,7 @@ function(input, output, session) {
           }
           hist_obj <- hist(rv$custom_data_temp$HT, breaks=9, plot = FALSE)
           if(is.null(rv$custom_hist_ylim)){
-            rv$custom_hist_ylim <- c(0, max(hist_obj$counts) * 1.1) 
+            rv$custom_hist_ylim <- c(0, max(hist_obj$counts) * 1.1)
             rv$custom_breaks <-hist_obj$breaks
           }
           hist(rv$custom_data_temp$HT, col = currentColor, border = "grey",
@@ -904,5 +921,5 @@ function(input, output, session) {
     }
 
 }
-    
+
 
