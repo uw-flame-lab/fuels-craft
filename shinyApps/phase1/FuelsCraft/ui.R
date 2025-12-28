@@ -171,7 +171,7 @@ fluidPage(
           ),
           tabPanel("Understory",
             fluidRow(
-                   selectInput("understory", label=NULL, choices=c('Shrubs1', 'Shrubs2', 'Herbs1', 'Herbs2', 'Downed Wood', 'Litter, Lichen, Moss', 'Ground Fuels')),
+                   selectInput("understory", label=NULL, choices=c('Shrubs1', 'Shrubs2', 'Herbs1', 'Herbs2', 'Downed Wood: fine wood', 'Downed Wood: coarse wood', 'Litter, Lichen, Moss', 'Ground Fuels')),
 
                    # create UI for each understory option
                    mainPanel(
@@ -190,7 +190,7 @@ fluidPage(
                                         inline = TRUE),
                                sliderInput("shrub1_1percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
                                sliderInput("shrub1_1height", "Height (m):", min = 0, max = 10, value = 2),
-                               sliderInput("shrub1_1loading", "Loading (kg/m2):", min = 0, max = 20, value = 2.5),
+                               sliderInput("shrub1_1loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
                                radioButtons("shrub1_1needleDrape", "Needle Drape:",
                                         choices = c("Low", "Moderate", "High"),
                                         selected = "Moderate",
@@ -204,27 +204,34 @@ fluidPage(
                                         DTOutput("species_table")
                                  )
                                )
-
-
                              )
                            ),
                            tabPanel("Shrubs1 Fuelbed 2",
-                          value="shrub1_2fuelbedList",
-                          wellPanel(
-                            selectInput("shrub1_2fuelbedList", label="Shrubs1 Fuelbed 2", choices=NULL),
-                            sliderInput("shrub1_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
-                            radioButtons("shrub1_2spatialPattern", "Spatial pattern:",
-                                         choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
-                                         selected = "Uniform",
-                                         inline = TRUE),
-                            sliderInput("shrub1_2percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
-                            sliderInput("shrub1_2height", "Height (m):", min = 0, max = 10, value = 2),
-                            sliderInput("shrub1_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 2.5),
-                            radioButtons("shrub1_2needleDrape", "Needle Drape:",
-                                         choices = c("Low", "Moderate", "High"),
-                                         selected = "Moderate",
-                                         inline = TRUE),
-                          )
+                              value="shrub1_2fuelbedList",
+                              wellPanel(
+                                selectInput("shrub1_2fuelbedList", label="Shrubs1 Fuelbed 2", choices=NULL),
+                                sliderInput("shrub1_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                radioButtons("shrub1_2spatialPattern", "Spatial pattern:",
+                                             choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
+                                             selected = "Uniform",
+                                             inline = TRUE),
+                                sliderInput("shrub1_2percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                sliderInput("shrub1_2height", "Height (m):", min = 0, max = 10, value = 2),
+                                sliderInput("shrub1_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 2.5),
+                                radioButtons("shrub1_2needleDrape", "Needle Drape:",
+                                             choices = c("Low", "Moderate", "High"),
+                                             selected = "Moderate",
+                                             inline = TRUE),
+                                fluidRow(
+                                  column(12,
+                                         actionButton("add_species2", "Add Species",
+                                                      icon = icon("plus"),
+                                                      class = "btn-success"),
+                                         hr(),
+                                         DTOutput("species_table2")
+                                  )
+                                )
+                              )
                            ),
                         ),
                      ),

@@ -31,6 +31,18 @@ function(input, output, session) {
     rv$custom_breaks <- NULL
     rv$enclosing_raster <- NULL
 
+    rv$next_id <- 1
+
+    rv$species_df <- data.frame(
+      id = integer(),
+      species = character(),
+      speciesTSN = integer(),
+      relative_cover = numeric(),
+      stringsAsFactors = FALSE
+    )
+
+
+
     mainPolygonColor = "#33ffff"
 
     # Create an empty sf table
@@ -273,15 +285,34 @@ function(input, output, session) {
       }
     })
 
-    observeEvent(input$Shrubs1_tabs, {
-      message("User selected tab: ", input$Shrubs1_tabs)
+    observeEvent(input$understory, {
+      # when the understory selectInput changes, load species_ivDB.csv and filter based on understory type
+      # load data.frame from csv file species_ivDB.csv
+      species_ivDB <- read.csv("species_ivDB.csv", stringsAsFactors = FALSE)
+      print("count of species_ivDB rows:")
+      print(nrow(species_ivDB))
+      subsetRows <- NULL
+      if(input$understory == "Shrubs1" || input$understory == "Shrubs2") {
+        subsetRows <- species_ivDB %>% filter(shrub == 1)
+      } else if(input$understory == "Herbs1" || input$understory == "Herbs2") {
+        subsetRows <- species_ivDB %>% filter(nonwoody == 1)
+      } else if(input$understory == "Downed Wood: fine wood" || input$understory == "Downed Wood: coarse wood") {
+        subsetRows <- species_ivDB %>% filter(woody == 1)
+      } else {
+        subsetRows <- species_ivDB
+      }
+      print("count of subsetRows rows: ")
+      print(nrow(subsetRows))
+      rv$speciesSubset <- subsetRows # this subset is used to populate the species selectInput
+    })
 
+    loadPolygonsForFuelbed <- function(fuelbedTab) {
       # remove existing polgons from subMap
       proxy <- leafletProxy("subMap")
       proxy %>% clearGroup("understory_polygons")
 
-      # get polygons from rv$understory that have fuelbedTab == "shrub1_1fuelbedList"
-      fb_polygons <- rv$understory_sf %>% filter(fuelbedTab == input$Shrubs1_tabs)
+      # get polygons from rv$understory that have fuelbedTab == fuelbedTab
+      fb_polygons <- rv$understory_sf %>% filter(fuelbedTab == fuelbedTab)
       if(nrow(fb_polygons) == 0) {
         return(NULL)
       }
@@ -300,6 +331,127 @@ function(input, output, session) {
                                 bringToFront = TRUE
                               )
         )
+      }
+    }
+
+    observeEvent(input$Shrubs1_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Shrubs1
+      message("User selected tab: ", input$Shrubs1_tabs)
+      loadPolygonsForFuelbed(input$Shrubs1_tabs)
+    })
+
+    observeEvent(input$Shrubs2_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Shrubs2
+      message("User selected tab: ", input$Shrubs2_tabs)
+      loadPolygonsForFuelbed(input$Shrubs2_tabs)
+    })
+
+    observeEvent(input$shrub1_1fuelbedList, {
+      if(input$shrub1_1fuelbedList == "") {
+        return(NULL)
+      }
+
+      message("User selected fuelbed: ", input$shrub1_1fuelbedList)
+
+      # fuelbed file names...
+      # 0-291, FB_####_FCCS_###.xml
+      # 301-542 FB_####_LF_###.xml
+      # 1201-1299 FB_####_AG_###.xml
+
+      fbnum <- as.integer(input$shrub1_1fuelbedList)
+      disturbance <- "";
+
+      if(as.integer(input$shrub1_1fuelbedList) > 10000){
+        # fuelbed is a disturbance fuelbed
+        # get the base fuelbed number by removing the last 4 digits
+        fbnum <- as.integer(floor(as.integer(input$shrub1_1fuelbedList) / 10000) )
+        # last 3 digits are disturbance code
+        disturbance <- substr(as.character(input$shrub1_1fuelbedList), nchar(as.character(input$shrub1_1fuelbedList))-2, nchar(as.character(input$shrub1_1fuelbedList)) )
+      }
+
+      if(fbnum < 291) {
+        fb_file_prefix <- "FB_"
+        fb_file_suffix <- "_FCCS"
+      } else if (fbnum >= 301 && fbnum <= 542) {
+        fb_file_prefix <- "FB_"
+        fb_file_suffix <- "_LF"
+      } else if (fbnum >= 1201 && fbnum <= 1299) {
+        fb_file_prefix <- "FB_"
+        fb_file_suffix <- "_AG"
+      } else {
+        showNotification("Selected fuelbed is out of range.", type = "error")
+        return(NULL)
+      }
+
+      fb_filename <- paste0(fb_file_prefix, sprintf("%04d", fbnum), fb_file_suffix, ".xml")
+      if(disturbance != "")
+      {
+        fb_filename <- paste0(fb_file_prefix, sprintf("%04d", fbnum), fb_file_suffix, "_", disturbance, ".xml")
+      }
+
+      print(paste0("Loading fuelbed file: ", fb_filename))
+      # load xml file for the selected fuelbed from fuelbeds folder
+      fb_file <- paste0("fuelbeds/", fb_filename)
+      fb_xml <- readLines(fb_file)
+
+      # convert to xml document
+      fb_doc <- xml2::read_xml(paste(fb_xml, collapse = "\n"))
+
+      shrubs_node <- xml2::xml_find_first(fb_doc, ".//shrubs/primary_layer")
+      species_nodes <- xml2::xml_find_all(shrubs_node, ".//species_description")
+
+      # set shrub1_1fuelbedPct from percent_cover node
+      percent_cover_node <- xml2::xml_find_first(shrubs_node, ".//percent_cover")
+      shrub1_1fuelbedPct <- as.numeric(xml2::xml_text(percent_cover_node))
+      updateNumericInput(session, "shrub1_1fuelbedPct", value = shrub1_1fuelbedPct)
+
+      # set shrub1_1percentLive from percent_live node
+      percent_live_node <- xml2::xml_find_first(shrubs_node, ".//percent_live")
+      shrub1_1percentLive <- as.numeric(xml2::xml_text(percent_live_node))
+      updateNumericInput(session, "shrub1_1percentLive", value = shrub1_1percentLive)
+
+      # set shrub1_1height from height node
+      height_node <- xml2::xml_find_first(shrubs_node, ".//height")
+      shrub1_1height <- as.numeric(xml2::xml_text(height_node))
+      updateNumericInput(session, "shrub1_1height", value = shrub1_1height)
+
+      # optional loading isn't set for any reference or LF fuelbeds, leave it set to zero.
+
+      df <- data.frame(
+        id = integer(),
+        species = character(),
+        speciesTSN = integer(),
+        relative_cover = numeric(),
+        stringsAsFactors = FALSE
+      )
+
+      # fill in df data frame
+      rv$next_id <- 1
+      for(species_node in species_nodes) {
+        tsn <- as.integer(xml2::xml_text(xml2::xml_find_first(species_node, ".//tsn")))
+        relative_cover <- as.numeric(xml2::xml_text(xml2::xml_find_first(species_node, ".//relative_cover")))
+        species_name <- rv$speciesSubset %>% dplyr::filter(TSN == tsn) %>% dplyr::select(CommonName) %>% unlist() %>% as.character()
+        df <- rbind(df, data.frame(
+          id = rv$next_id,
+          species = species_name,
+          speciesTSN = tsn,
+          relative_cover = relative_cover,
+          stringsAsFactors = FALSE
+        ))
+        rv$next_id <- rv$next_id + 1
+      }
+
+      if(nrow(df) > 0) {
+          rv$species_df <- df
+      }
+      else {
+          rv$species_df <- data.frame(
+            id = integer(0),
+            species = character(0),
+            speciesTSN = integer(0),
+            relative_cover = numeric(0),
+            stringsAsFactors = FALSE
+          )
       }
     })
 
@@ -1414,38 +1566,40 @@ function(input, output, session) {
     }
 
     # # Initialize reactive values with sample data
-    rv$species_df = data.frame(
-        id = 1:3,
-        species = c("Douglas Fir", "Ponderosa Pine", "Lodgepole Pine"),
-        relative_cover = c(0.35, 0.40, 0.25),
-        bulk_density = c(12.5, 10.2, 11.8),
-        sa_volume_ratio = c(2500, 2200, 2400),
-        stringsAsFactors = FALSE
-      )
-    rv$next_id = 4  # To keep track of the next ID for new species
+    # rv$species_df = data.frame(
+    #     id = 1:3,
+    #     species = c("Douglas Fir", "Ponderosa Pine", "Lodgepole Pine"),
+    #     speciesTSN = c(183706, 183710, 183712),
+    #     relative_cover = c(0.35, 0.40, 0.25),
+    #     stringsAsFactors = FALSE
+    #   )
+    # rv$next_id = 4  # To keep track of the next ID for new species
 
     # Render the table with action buttons
     output$species_table <- renderDT({
       df <- rv$species_df
 
-      # Add action buttons column
-      df$actionEdit <- paste0(
-        '<button class="btn btn-primary btn-sm edit-btn" data-id="', df$id, '">',
-        '<i class="fa fa-edit"></i> Edit</button> '
-      )
-      df$actionRemove <- paste0(
-        '<button class="btn btn-danger btn-sm delete-btn" data-id="', df$id, '">',
-        '<i class="fa fa-trash"></i> Remove</button>'
-      )
+      if (nrow(df) > 0) {
+        df$actionEdit <- paste0(
+          '<button class="btn btn-primary btn-sm edit-btn" data-id="', df$id, '">',
+          '<i class="fa fa-edit"></i> Edit</button> '
+        )
+        df$actionRemove <- paste0(
+          '<button class="btn btn-danger btn-sm delete-btn" data-id="', df$id, '">',
+          '<i class="fa fa-trash"></i> Remove</button>'
+        )
+      }
+      else {
+        df$actionEdit <- character(0)
+        df$actionRemove <- character(0)
+      }
 
       # Remove id column for display
-      df_display <- df[, c("species", "relative_cover", "bulk_density",
-                           "sa_volume_ratio", "actionEdit", "actionRemove")]
+      df_display <- df[, c("species", "relative_cover", "actionEdit", "actionRemove")]
 
       datatable(
         df_display,
-        colnames = c("Species", "Relative Cover", "Bulk Density (lb/ft³)",
-                     "SA/Volume Ratio (ft⁻¹)", "", ""),
+        colnames = c("Species", "Relative Cover", "", ""),
         escape = FALSE,  # Allow HTML in actions column
         selection = 'none',
         rownames = FALSE,
@@ -1453,8 +1607,8 @@ function(input, output, session) {
           dom = 't',  # Just the table, no search/pagination
           ordering = FALSE,
           columnDefs = list(
-            list(className = 'dt-center', targets = 1:4),
-            list(width = '200px', targets = 4)
+            list(className = 'dt-center', targets = 1:3),
+            list(width = '200px', targets = 3)
           )
         )
       )
@@ -1474,16 +1628,14 @@ function(input, output, session) {
 
         showModal(modalDialog(
           title = "Edit Species",
-          textInput("edit_species", "Species Name", value = row_data$species),
-          numericInput("edit_relative_cover", "Relative Cover (0-1)",
+          div(style = "display: none;", textInput("edit_species", "Species Name", value = row_data$species)),
+          selectInput("edit_species_select", "Select Species",
+                      choices = setNames(rv$speciesSubset$TSN,
+                                         paste(rv$speciesSubset$ScientificName, " : ", rv$speciesSubset$CommonName)),
+                      selected = row_data$speciesTSN),
+          numericInput("edit_relative_cover", "Relative Cover",
                        value = row_data$relative_cover,
-                       min = 0, max = 1, step = 0.01),
-          numericInput("edit_bulk_density", "Bulk Density (lb/ft³)",
-                       value = row_data$bulk_density,
-                       min = 0, step = 0.1),
-          numericInput("edit_sa_volume_ratio", "Surface Area to Volume Ratio (ft⁻¹)",
-                       value = row_data$sa_volume_ratio,
-                       min = 0, step = 10),
+                       min = 0, max = 100, step = 1),
           footer = tagList(
             modalButton("Cancel"),
             actionButton("save_edit", "Save Changes", class = "btn-primary")
@@ -1494,6 +1646,21 @@ function(input, output, session) {
         # Store the ID being edited
         rv$editing_id <- id
       }
+
+      # Update fields when species selection changes
+      observeEvent(input$edit_species_select, {
+        req(input$edit_species_select)
+
+        # Get the selected TSN
+        selected_tsn <- input$edit_species_select
+        # Find the species data
+        species_data <- rv$speciesSubset[rv$speciesSubset$TSN == selected_tsn, ]
+        if (nrow(species_data) > 0) {
+          # Update the text input
+          updateTextInput(session, "edit_species",
+                          value = species_data$ScientificName)
+        }
+      })
 
       # Handle Delete button clicks
       if (!is.null(info$value) && grepl("delete-btn", info$value)) {
@@ -1519,10 +1686,8 @@ function(input, output, session) {
       row_idx <- which(rv$species_df$id == id)
 
       rv$species_df[row_idx, "species"] <- input$edit_species
+      rv$species_df[row_idx, "speciesTSN"] <- input$edit_species_select
       rv$species_df[row_idx, "relative_cover"] <- input$edit_relative_cover
-      rv$species_df[row_idx, "bulk_density"] <- input$edit_bulk_density
-      rv$species_df[row_idx, "sa_volume_ratio"] <- input$edit_sa_volume_ratio
-
       removeModal()
     })
 
@@ -1534,21 +1699,42 @@ function(input, output, session) {
 
     # Add new species
     observeEvent(input$add_species, {
+
+      namedChoices <- setNames(rv$speciesSubset$TSN,
+                                   paste(rv$speciesSubset$ScientificName, " : ", rv$speciesSubset$CommonName))
+
+      namedChoices <- sort(namedChoices)
       showModal(modalDialog(
         title = "Add New Species",
-        textInput("new_species", "Species Name", value = ""),
-        numericInput("new_relative_cover", "Relative Cover (0-1)",
-                     value = 0, min = 0, max = 1, step = 0.01),
-        numericInput("new_bulk_density", "Bulk Density (lb/ft³)",
-                     value = 0, min = 0, step = 0.1),
-        numericInput("new_sa_volume_ratio", "Surface Area to Volume Ratio (ft⁻¹)",
-                     value = 0, min = 0, step = 10),
+        div(style = "display: none;",textInput("new_species", "Species Name", value = "")),
+        selectInput("new_species_select", "Select Species",
+                    choices = namedChoices),
+        numericInput("new_relative_cover", "Relative Cover",
+                     value = 0, min = 0, max = 100, step = 1),
         footer = tagList(
           modalButton("Cancel"),
           actionButton("save_new", "Add Species", class = "btn-success")
         ),
         easyClose = TRUE
       ))
+    })
+
+    # Update fields when species selection changes
+    observeEvent(input$new_species_select, {
+      req(input$new_species_select)
+
+      # Get the selected TSN
+      selected_tsn <- input$new_species_select
+
+      # Find the species data
+      species_data <- rv$speciesSubset[rv$speciesSubset$TSN == selected_tsn, ]
+
+      if (nrow(species_data) > 0) {
+        # Update the text input
+        updateTextInput(session, "new_species",
+                        value = species_data$ScientificName)
+
+      }
     })
 
     # Save new species
@@ -1558,9 +1744,8 @@ function(input, output, session) {
       new_row <- data.frame(
         id = rv$next_id,
         species = input$new_species,
+        speciesTSN = input$new_species_select,
         relative_cover = input$new_relative_cover,
-        bulk_density = input$new_bulk_density,
-        sa_volume_ratio = input$new_sa_volume_ratio,
         stringsAsFactors = FALSE
       )
 
