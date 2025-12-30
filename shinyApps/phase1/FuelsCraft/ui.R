@@ -179,10 +179,11 @@ fluidPage(
                        condition = "input.understory == 'Shrubs1'",
                          tabsetPanel(
                            id="Shrubs1_tabs",
-                           tabPanel("Shrubs1 Fuelbed 1",
+                           tabPanel("Fuelbed 1",
                              value="shrub1_1fuelbedList",
                              wellPanel(
-                               selectInput("shrub1_1fuelbedList", label="Shrubs1 Fuelbed 1", choices=NULL),
+                               id="shrub1_1",
+                               selectInput("shrub1_1fuelbedList", label=NULL, choices=NULL),
                                sliderInput("shrub1_1fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
                                radioButtons("shrub1_1spatialPattern", "Spatial pattern:",
                                         choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
@@ -195,21 +196,14 @@ fluidPage(
                                         choices = c("Low", "Moderate", "High"),
                                         selected = "Moderate",
                                         inline = TRUE),
-                               fluidRow(
-                                 column(12,
-                                        actionButton("add_species", "Add Species",
-                                                     icon = icon("plus"),
-                                                     class = "btn-success"),
-                                        hr(),
-                                        DTOutput("species_table")
-                                 )
-                               )
+                               tags$div(id = "shrub1_1_species_div")
                              )
                            ),
-                           tabPanel("Shrubs1 Fuelbed 2",
+                           tabPanel("Fuelbed 2",
                               value="shrub1_2fuelbedList",
                               wellPanel(
-                                selectInput("shrub1_2fuelbedList", label="Shrubs1 Fuelbed 2", choices=NULL),
+                                id="shrub1_2",
+                                selectInput("shrub1_2fuelbedList", label=NULL, choices=NULL),
                                 sliderInput("shrub1_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
                                 radioButtons("shrub1_2spatialPattern", "Spatial pattern:",
                                              choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
@@ -217,47 +211,174 @@ fluidPage(
                                              inline = TRUE),
                                 sliderInput("shrub1_2percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
                                 sliderInput("shrub1_2height", "Height (m):", min = 0, max = 10, value = 2),
-                                sliderInput("shrub1_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 2.5),
+                                sliderInput("shrub1_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
                                 radioButtons("shrub1_2needleDrape", "Needle Drape:",
                                              choices = c("Low", "Moderate", "High"),
                                              selected = "Moderate",
                                              inline = TRUE),
-                                fluidRow(
-                                  column(12,
-                                         actionButton("add_species2", "Add Species",
-                                                      icon = icon("plus"),
-                                                      class = "btn-success"),
-                                         hr(),
-                                         DTOutput("species_table2")
-                                  )
-                                )
+                                tags$div(id = "shrub1_2_species_div")
                               )
                            ),
                         ),
                      ),
                      conditionalPanel(
                        condition = "input.understory == 'Shrubs2'",
-                       wellPanel(
-                         h4("Shrubs 2"),
-                         selectInput("shrub2_1fuelbedList", "Fuelbed 1", choices=NULL),
-                         selectInput("shrub2_2fuelbedList", "Fuelbed 2", choices=NULL),
-                       )
+                       tabsetPanel(
+                         id="Shrubs2_tabs",
+                         tabPanel("Fuelbed 1",
+                                  value="shrub2_1fuelbedList",
+                                  wellPanel(
+                                    id="shrub2_1",
+                                    selectInput("shrub2_1fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("shrub2_1fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                    radioButtons("shrub2_1spatialPattern", "Spatial pattern:",
+                                                 choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
+                                                 selected = "Uniform",
+                                                 inline = TRUE),
+                                    sliderInput("shrub2_1percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                    sliderInput("shrub2_1height", "Height (m):", min = 0, max = 10, value = 2),
+                                    sliderInput("shrub2_1loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
+                                    tags$div(id = "shrub2_1_species_div")
+                                  )
+                         ),
+                         tabPanel("Fuelbed 2",
+                                  value="shrub2_2fuelbedList",
+                                  wellPanel(
+                                    id="shrub2_2",
+                                    selectInput("shrub2_2fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("shrub2_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                    radioButtons("shrub2_2spatialPattern", "Spatial pattern:",
+                                                 choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
+                                                 selected = "Uniform",
+                                                 inline = TRUE),
+                                    sliderInput("shrub2_2percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                    sliderInput("shrub2_2height", "Height (m):", min = 0, max = 10, value = 2),
+                                    sliderInput("shrub2_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
+                                    tags$div(id = "shrub2_2_species_div")
+                                  )
+                         ),
+                       ),
                      ),
                      conditionalPanel(
                        condition = "input.understory == 'Herbs1'",
-                       wellPanel(
-                         h4("Herbs1"),
-                         selectInput("herb1_1fuelbedList", "Fuelbed 1", choices=NULL),
-                         selectInput("herb1_2fuelbedList", "Fuelbed 2", choices=NULL),
-                       )
-                     )
+                       tabsetPanel(
+                         id="Herbs1_tabs",
+                         tabPanel("Fuelbed 1",
+                                  value="herb1_1fuelbedList",
+                                  wellPanel(
+                                    id="herb1_1",
+                                    selectInput("herb1_1fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("herb1_1fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                    radioButtons("herb1_1spatialPattern", "Spatial pattern:",
+                                                 choices = c("Outside of tree crowns", "Evenly distributed", "Near trees"),
+                                                 selected = "Outside of tree crowns",
+                                                 inline = TRUE),
+                                    sliderInput("herb1_1percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                    sliderInput("herb1_1height", "Height (m):", min = 0, max = 10, value = 2),
+                                    sliderInput("herb1_1loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
+                                    tags$div(id = "herb1_1_species_div")
+                                  )
+                         ),
+                         tabPanel("Fuelbed 2",
+                                  value="herb1_2fuelbedList",
+                                  wellPanel(
+                                    id="herb1_2",
+                                    selectInput("herb1_2fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("herb1_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                    radioButtons("herb1_2spatialPattern", "Spatial pattern:",
+                                                 choices = c("Outside of tree crowns", "Evenly distributed", "Near trees"),
+                                                 selected = "Outside of tree crowns",
+                                                 inline = TRUE),
+                                    sliderInput("herb1_2percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                    sliderInput("herb1_2height", "Height (m):", min = 0, max = 10, value = 2),
+                                    sliderInput("herb1_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
+                                    tags$div(id = "herb1_2_species_div")
+                                  )
+                         ),
+                       ),
+                     ),
+                     conditionalPanel(
+                       condition = "input.understory == 'Herbs2'",
+                       tabsetPanel(
+                         id="Herbs2_tabs",
+                         tabPanel("Fuelbed 1",
+                                  value="herb2_1fuelbedList",
+                                  wellPanel(
+                                    id="herb2_1",
+                                    selectInput("herb2_1fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("herb2_1fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                    radioButtons("herb2_1spatialPattern", "Spatial pattern:",
+                                                 choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
+                                                 selected = "Uniform",
+                                                 inline = TRUE),
+                                    sliderInput("herb2_1percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                    sliderInput("herb2_1height", "Height (m):", min = 0, max = 10, value = 2),
+                                    sliderInput("herb2_1loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
+                                    tags$div(id = "herb2_1_species_div")
+                                  )
+                         ),
+                         tabPanel("Fuelbed 2",
+                                  value="herb2_2fuelbedList",
+                                  wellPanel(
+                                    id="herb2_2",
+                                    selectInput("herb2_2fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("herb2_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
+                                    radioButtons("herb2_2spatialPattern", "Spatial pattern:",
+                                                 choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
+                                                 selected = "Uniform",
+                                                 inline = TRUE),
+                                    sliderInput("herb2_2percentLive", "Percent live (%):", min = 0, max = 100, value = 70),
+                                    sliderInput("herb2_2height", "Height (m):", min = 0, max = 10, value = 2),
+                                    sliderInput("herb2_2loading", "Loading (kg/m2):", min = 0, max = 20, value = 0),
+                                    tags$div(id = "herb2_2_species_div")
+                                  )
+                         ),
+                       ),
+                     ),
+                     conditionalPanel(
+                       condition = "input.understory == 'Downed Wood: fine wood'",
+                       tabsetPanel(
+                         id="DownedFine_tabs",
+                         tabPanel("Fuelbed 1",
+                                  value="downedFine_1fuelbedList",
+                                  wellPanel(
+                                    id="downedFine_1",
+                                    selectInput("downedFine_1fuelbedList", label=NULL, choices=NULL),
+                                    radioButtons("downedFine_1spatialPattern", "Spatial pattern:",
+                                                 choices = c("Beneath tree crowns", "Evenly distributed"),
+                                                 selected = "Beneath tree crowns",
+                                                 inline = TRUE),
+                                    sliderInput("downedFine_1fuelbedPct", "Percent Cover",  min = 0, max = 200, value=0),
+                                    sliderInput("downedFine_1fuelbedDepth", "Depth",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbed1hrLoad", "1hr load",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbed10hrLoad", "10hr load",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbed100hrLoad", "100hr load",  min = 0, max = 10, value=0),
+                                  )
+                         ),
+                         tabPanel("Fuelbed 2",
+                                  value="downedFine_2fuelbedList",
+                                  wellPanel(
+                                    id="downedFine_2",
+                                    selectInput("downedFine_2fuelbedList", label=NULL, choices=NULL),
+                                    radioButtons("downedFine_1spatialPattern", "Spatial pattern:",
+                                                 choices = c("Beneath tree crowns", "Evenly distributed"),
+                                                 selected = "Beneath tree crowns",
+                                                 inline = TRUE)                                    ),
+                                    sliderInput("downedFine_2fuelbedPct", "Percent Cover",  min = 0, max = 200, value=0),
+                                    sliderInput("downedFine_2fuelbedDepth", "Depth",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbed1hrLoad", "1hr load",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbed10hrLoad", "10hr load",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbed100hrLoad", "100hr load",  min = 0, max = 10, value=0),
+                                  )
+                       ),
+                     ),
                    )
             ),
             fluidRow(
               actionButton("addUnderstory", "Add Understory", disabled=FALSE)
             )
           )
-        ),
+        )
 #        actionButton("create3DVoxelPlot", "Visualize Voxels", disabled=FALSE),
 #        plotOutput("voxel3dPlot", width="100%", height="300px") %>% withSpinner(color="#0dc5c1"),
 

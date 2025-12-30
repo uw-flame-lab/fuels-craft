@@ -7,9 +7,122 @@
 #    https://shiny.posit.co/
 #
 
-# Define server logic required to draw a histogram
-function(input, output, session) {
+# Define configuration for all fuelbeds (shrubs and herbs)
+FUELBED_CONFIGS <- list(
+  # Shrub1 configs
+  shrub1_1 = list(
+    input_id = "shrub1_1fuelbedList",
+    rv_storage = "shrubs1_1_xml",
+    xml_path = ". //shrubs/primary_layer",
+    pct_input = "shrub1_1fuelbedPct",
+    live_input = "shrub1_1percentLive",
+    height_input = "shrub1_1height",
+    loading_input = "shrub1_1loading",
+    species_div = "shrub1_1_species_div",
+    understory_type = "Shrubs1",
+    tab_id = "Shrubs1_tabs",
+    tab_value = "shrub1_1fuelbedList"
+  ),
+  shrub1_2 = list(
+    input_id = "shrub1_2fuelbedList",
+    rv_storage = "shrubs1_2_xml",
+    xml_path = ".//shrubs/primary_layer",
+    pct_input = "shrub1_2fuelbedPct",
+    live_input = "shrub1_2percentLive",
+    height_input = "shrub1_2height",
+    loading_input = "shrub1_2loading",
+    species_div = "shrub1_2_species_div",
+    understory_type = "Shrubs1",
+    tab_id = "Shrubs1_tabs",
+    tab_value = "shrub1_2fuelbedList"
+  ),
 
+  # Shrub2 configs
+  shrub2_1 = list(
+    input_id = "shrub2_1fuelbedList",
+    rv_storage = "shrubs2_1_xml",
+    xml_path = ".//shrubs/secondary_layer",
+    pct_input = "shrub2_1fuelbedPct",
+    live_input = "shrub2_1percentLive",
+    height_input = "shrub2_1height",
+    loading_input = "shrub2_1loading",
+    species_div = "shrub2_1_species_div",
+    understory_type = "Shrubs2",
+    tab_id = "Shrubs2_tabs",
+    tab_value = "shrub2_1fuelbedList"
+  ),
+  shrub2_2 = list(
+    input_id = "shrub2_2fuelbedList",
+    rv_storage = "shrubs2_2_xml",
+    xml_path = ".//shrubs/secondary_layer",
+    pct_input = "shrub2_2fuelbedPct",
+    live_input = "shrub2_2percentLive",
+    height_input = "shrub2_2height",
+    loading_input = "shrub2_2loading",
+    species_div = "shrub2_2_species_div",
+    understory_type = "Shrubs2",
+    tab_id = "Shrubs2_tabs",
+    tab_value = "shrub2_2fuelbedList"
+  ),
+
+  # Herb1 configs (primary herbaceous layer)
+  herb1_1 = list(
+    input_id = "herb1_1fuelbedList",
+    rv_storage = "herbs1_1_xml",
+    xml_path = ".//herbaceous/primary_layer",
+    pct_input = "herb1_1fuelbedPct",
+    live_input = "herb1_1percentLive",
+    height_input = "herb1_1height",
+    loading_input = "herb1_1loading",
+    species_div = "herb1_1_species_div",
+    understory_type = "Herbs1",
+    tab_id = "Herbs1_tabs",
+    tab_value = "herb1_1fuelbedList"
+  ),
+  herb1_2 = list(
+    input_id = "herb1_2fuelbedList",
+    rv_storage = "herbs1_2_xml",
+    xml_path = ".//herbaceous/primary_layer",
+    pct_input = "herb1_2fuelbedPct",
+    live_input = "herb1_2percentLive",
+    height_input = "herb1_2height",
+    loading_input = "herb1_2loading",
+    species_div = "herb1_2_species_div",
+    understory_type = "Herbs1",
+    tab_id = "Herbs1_tabs",
+    tab_value = "herb1_2fuelbedList"
+  ),
+
+  # Herb2 configs (secondary herbaceous layer)
+  herb2_1 = list(
+    input_id = "herb2_1fuelbedList",
+    rv_storage = "herbs2_1_xml",
+    xml_path = ". //herbaceous/secondary_layer",
+    pct_input = "herb2_1fuelbedPct",
+    live_input = "herb2_1percentLive",
+    height_input = "herb2_1height",
+    loading_input = "herb2_1loading",
+    species_div = "herb2_1_species_div",
+    understory_type = "Herbs2",
+    tab_id = "Herbs2_tabs",
+    tab_value = "herb2_1fuelbedList"
+  ),
+  herb2_2 = list(
+    input_id = "herb2_2fuelbedList",
+    rv_storage = "herbs2_2_xml",
+    xml_path = ".//herbaceous/secondary_layer",
+    pct_input = "herb2_2fuelbedPct",
+    live_input = "herb2_2percentLive",
+    height_input = "herb2_2height",
+    loading_input = "herb2_2loading",
+    species_div = "herb2_2_species_div",
+    understory_type = "Herbs2",
+    tab_id = "Herbs2_tabs",
+    tab_value = "herb2_2fuelbedList"
+  )
+)
+
+function(input, output, session) {
     # reactive values
     rv <- reactiveValues()
     rv$polygon <- NULL
@@ -40,6 +153,27 @@ function(input, output, session) {
       relative_cover = numeric(),
       stringsAsFactors = FALSE
     )
+
+    rv$shrubs1_1_xml <- NULL
+    rv$shrubs1_2_xml <- NULL
+    rv$shrubs2_1_xml <- NULL
+    rv$shrubs2_2_xml <- NULL
+
+    rv$shrub1_1_species_div_df <- NULL
+    rv$shrub1_2_species_div_df <- NULL
+    rv$shrub2_1_species_div_df <- NULL
+    rv$shrub2_2_species_div_df <- NULL
+
+    rv$herbs1_1_xml <- NULL
+    rv$herbs1_2_xml <- NULL
+    rv$herbs2_1_xml <- NULL
+    rv$herbs2_2_xml <- NULL
+
+    rv$herb1_1_species_div_df <- NULL
+    rv$herb1_2_species_div_df <- NULL
+    rv$herb2_1_species_div_df <- NULL
+    rv$herb2_2_species_div_df <- NULL
+
 
 
 
@@ -278,6 +412,8 @@ function(input, output, session) {
         updateSelectInput(session, "shrub2_2fuelbedList", choices = namedChoices)
         updateSelectInput(session, "herb1_1fuelbedList", choices = namedChoices)
         updateSelectInput(session, "herb1_2fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "herb2_1fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "herb2_2fuelbedList", choices = namedChoices)
       } else {
         outputString <- paste0("area: ", area, " (too large, must be < 16 km^2)")
         output$area <- renderPrint({outputString})
@@ -304,15 +440,65 @@ function(input, output, session) {
       print("count of subsetRows rows: ")
       print(nrow(subsetRows))
       rv$speciesSubset <- subsetRows # this subset is used to populate the species selectInput
+
+      # get species_nodes depending on input$unsterstory and current fuelbed tab
+      if(input$understory == "Shrubs1" && input$Shrubs1_tabs == "shrub1_1fuelbedList"){
+        if(!is.null(rv$shrubs1_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$shrubs1_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "shrub1_1_species_div", rv$shrub1_1_species_div_df)
+        }
+      }
+      if(input$understory == "Shrubs1" && input$Shrubs1_tabs == "shrub1_2fuelbedList"){
+        if(!is.null(rv$shrubs1_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$shrubs1_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "shrub1_2_species_div", rv$shrub1_2_species_div_df)
+        }
+      }
+      if(input$understory == "Shrubs2" && input$Shrubs2_tabs == "shrub2_1fuelbedList"){
+        if(!is.null(rv$shrubs2_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$shrubs2_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "shrub2_1_species_div", rv$shrub2_1_species_div_df)
+        }
+      }
+      if(input$understory == "Shrubs2" && input$Shrubs2_tabs == "shrub2_2fuelbedList"){
+        if(!is.null(rv$shrubs2_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$shrubs2_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "shrub2_2_species_div", rv$shrub2_2_species_div_df)
+        }
+      }
+      if(input$understory == "Herbs1" && input$Herbs1_tabs == "herb1_1fuelbedList"){
+        if(!is.null(rv$herbs1_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs1_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb1_1_species_div", rv$herb1_1_species_div_df)
+        }
+      }
+      if(input$understory == "Herbs1" && input$Herbs1_tabs == "herb1_2fuelbedList"){
+        if(!is.null(rv$herbs1_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs1_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb1_2_species_div", rv$herb1_2_species_div_df)
+        }
+      }
+      if(input$understory == "Herbs2" && input$Herbs2_tabs == "herb2_1fuelbedList"){
+        if(!is.null(rv$herbs2_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs2_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb2_1_species_div", rv$herb2_1_species_div_df)
+        }
+      }
+      if(input$understory == "Herbs2" && input$Herbs2_tabs == "herb2_2fuelbedList"){
+        if(!is.null(rv$herbs2_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs2_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb2_2_species_div", rv$herb2_2_species_div_df)
+        }
+      }
     })
 
-    loadPolygonsForFuelbed <- function(fuelbedTab) {
+    loadPolygonsForFuelbed <- function(selectedFuelbedTab) {
       # remove existing polgons from subMap
       proxy <- leafletProxy("subMap")
       proxy %>% clearGroup("understory_polygons")
 
-      # get polygons from rv$understory that have fuelbedTab == fuelbedTab
-      fb_polygons <- rv$understory_sf %>% filter(fuelbedTab == fuelbedTab)
+      # get polygons from rv$understory that have fuelbedTab == selectedFuelbedTab
+      fb_polygons <- rv$understory_sf %>% filter(fuelbedTab == selectedFuelbedTab)
       if(nrow(fb_polygons) == 0) {
         return(NULL)
       }
@@ -338,35 +524,89 @@ function(input, output, session) {
       # this happens when user changes fuelbed 1/2 tabs within Shrubs1
       message("User selected tab: ", input$Shrubs1_tabs)
       loadPolygonsForFuelbed(input$Shrubs1_tabs)
+      if(input$Shrubs1_tabs == 'shrub1_1fuelbedList'){
+          if(!is.null(rv$shrubs1_1_xml)) {
+            species_nodes <- xml2::xml_find_all(rv$shrubs1_1_xml, ".//species_description")
+            createSpeciesUI(species_nodes, "shrub1_1_species_div", rv$shrub1_1_species_div_df)
+          }
+      }
+      if(input$Shrubs1_tabs == 'shrub1_2fuelbedList'){
+          if(!is.null(rv$shrubs1_2_xml)) {
+            species_nodes <- xml2::xml_find_all(rv$shrubs1_2_xml, ".//species_description")
+            createSpeciesUI(species_nodes, "shrub1_2_species_div", rv$shrub1_2_species_div_df)
+          }
+      }
     })
 
     observeEvent(input$Shrubs2_tabs, {
       # this happens when user changes fuelbed 1/2 tabs within Shrubs2
       message("User selected tab: ", input$Shrubs2_tabs)
       loadPolygonsForFuelbed(input$Shrubs2_tabs)
+      if(input$Shrubs2_tabs == 'shrub2_1fuelbedList'){
+        if(!is.null(rv$shrubs2_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$shrubs2_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "shrub2_1_species_div", rv$shrub2_1_species_div_df)
+        }
+      }
+      if(input$Shrubs2_tabs == 'shrub2_2fuelbedList'){
+        if(!is.null(rv$shrubs2_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$shrubs2_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "shrub2_2_species_div", rv$shrub2_2_species_div_df)
+        }
+      }
     })
 
-    observeEvent(input$shrub1_1fuelbedList, {
-      if(input$shrub1_1fuelbedList == "") {
-        return(NULL)
+    observeEvent(input$Herbs1_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Herbs1
+      message("User selected tab: ", input$Herbs1_tabs)
+      loadPolygonsForFuelbed(input$Herbs1_tabs)
+      if(input$Herbs1_tabs == 'herb1_1fuelbedList'){
+        if(!is.null(rv$herbs1_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs1_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb1_1_species_div", rv$herb1_1_species_div_df)
+        }
       }
+      if(input$Herbs1_tabs == 'herb1_2fuelbedList'){
+        if(!is.null(rv$herbs1_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs1_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb1_2_species_div", rv$herb1_2_species_div_df)
+        }
+      }
+    })
 
-      message("User selected fuelbed: ", input$shrub1_1fuelbedList)
+    observeEvent(input$Herbs2_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Herbs2
+      message("User selected tab: ", input$Herbs2_tabs)
+      loadPolygonsForFuelbed(input$Herbs2_tabs)
+      if(input$Herbs2_tabs == 'herb2_1fuelbedList'){
+        if(!is.null(rv$herbs2_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs2_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb2_1_species_div", rv$herb2_1_species_div_df)
+        }
+      }
+      if(input$Herbs2_tabs == 'herb2_2fuelbedList'){
+        if(!is.null(rv$herbs2_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$herbs2_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "herb2_2_species_div", rv$herb2_2_species_div_df)
+        }
+      }
+    })
 
+
+    getFuelbedFilename <- function(fbnum) {
       # fuelbed file names...
       # 0-291, FB_####_FCCS_###.xml
       # 301-542 FB_####_LF_###.xml
       # 1201-1299 FB_####_AG_###.xml
 
-      fbnum <- as.integer(input$shrub1_1fuelbedList)
       disturbance <- "";
 
-      if(as.integer(input$shrub1_1fuelbedList) > 10000){
+      if(fbnum > 10000){
         # fuelbed is a disturbance fuelbed
-        # get the base fuelbed number by removing the last 4 digits
-        fbnum <- as.integer(floor(as.integer(input$shrub1_1fuelbedList) / 10000) )
         # last 3 digits are disturbance code
-        disturbance <- substr(as.character(input$shrub1_1fuelbedList), nchar(as.character(input$shrub1_1fuelbedList))-2, nchar(as.character(input$shrub1_1fuelbedList)) )
+        disturbance <- substr(as.character(fbnum), nchar(as.character(fbnum))-2, nchar(as.character(fbnum)) )
+        # get the base fuelbed number by removing the last 4 digits
+        fbnum <- as.integer(floor(fbnum / 10000) )
       }
 
       if(fbnum < 291) {
@@ -388,71 +628,162 @@ function(input, output, session) {
       {
         fb_filename <- paste0(fb_file_prefix, sprintf("%04d", fbnum), fb_file_suffix, "_", disturbance, ".xml")
       }
+      return(fb_filename)
+    }
 
-      print(paste0("Loading fuelbed file: ", fb_filename))
-      # load xml file for the selected fuelbed from fuelbeds folder
-      fb_file <- paste0("fuelbeds/", fb_filename)
-      fb_xml <- readLines(fb_file)
-
-      # convert to xml document
-      fb_doc <- xml2::read_xml(paste(fb_xml, collapse = "\n"))
-
-      shrubs_node <- xml2::xml_find_first(fb_doc, ".//shrubs/primary_layer")
-      species_nodes <- xml2::xml_find_all(shrubs_node, ".//species_description")
-
-      # set shrub1_1fuelbedPct from percent_cover node
-      percent_cover_node <- xml2::xml_find_first(shrubs_node, ".//percent_cover")
-      shrub1_1fuelbedPct <- as.numeric(xml2::xml_text(percent_cover_node))
-      updateNumericInput(session, "shrub1_1fuelbedPct", value = shrub1_1fuelbedPct)
-
-      # set shrub1_1percentLive from percent_live node
-      percent_live_node <- xml2::xml_find_first(shrubs_node, ".//percent_live")
-      shrub1_1percentLive <- as.numeric(xml2::xml_text(percent_live_node))
-      updateNumericInput(session, "shrub1_1percentLive", value = shrub1_1percentLive)
-
-      # set shrub1_1height from height node
-      height_node <- xml2::xml_find_first(shrubs_node, ".//height")
-      shrub1_1height <- as.numeric(xml2::xml_text(height_node))
-      updateNumericInput(session, "shrub1_1height", value = shrub1_1height)
-
-      # optional loading isn't set for any reference or LF fuelbeds, leave it set to zero.
-
-      df <- data.frame(
-        id = integer(),
-        species = character(),
-        speciesTSN = integer(),
-        relative_cover = numeric(),
-        stringsAsFactors = FALSE
-      )
-
-      # fill in df data frame
-      rv$next_id <- 1
-      for(species_node in species_nodes) {
-        tsn <- as.integer(xml2::xml_text(xml2::xml_find_first(species_node, ".//tsn")))
-        relative_cover <- as.numeric(xml2::xml_text(xml2::xml_find_first(species_node, ".//relative_cover")))
-        species_name <- rv$speciesSubset %>% dplyr::filter(TSN == tsn) %>% dplyr::select(CommonName) %>% unlist() %>% as.character()
-        df <- rbind(df, data.frame(
-          id = rv$next_id,
-          species = species_name,
-          speciesTSN = tsn,
-          relative_cover = relative_cover,
-          stringsAsFactors = FALSE
-        ))
-        rv$next_id <- rv$next_id + 1
-      }
-
-      if(nrow(df) > 0) {
-          rv$species_df <- df
+    createSpeciesUI <- function(species_nodes, div_selector, existing_df) {
+      if(!is.null(existing_df)) {
+        df <- existing_df
+        rv$next_id <- max(existing_df$id) + 1
       }
       else {
-          rv$species_df <- data.frame(
-            id = integer(0),
-            species = character(0),
-            speciesTSN = integer(0),
-            relative_cover = numeric(0),
+        df <- data.frame(
+          id = integer(),
+          species = character(),
+          speciesTSN = integer(),
+          relative_cover = numeric(),
+          stringsAsFactors = FALSE
+        )
+
+        # fill in df data frame
+        rv$next_id <- 1
+        for(species_node in species_nodes) {
+          tsn <- as.integer(xml2::xml_text(xml2::xml_find_first(species_node, ".//tsn")))
+          relative_cover <- as.numeric(xml2::xml_text(xml2::xml_find_first(species_node, ".//relative_cover")))
+          species_name <- rv$speciesSubset %>% dplyr::filter(TSN == tsn) %>% dplyr::select(CommonName) %>% unlist() %>% as.character()
+          df <- rbind(df, data.frame(
+            id = rv$next_id,
+            species = species_name,
+            speciesTSN = tsn,
+            relative_cover = relative_cover,
             stringsAsFactors = FALSE
-          )
+          ))
+          rv$next_id <- rv$next_id + 1
+        }
+        # set the species df for this fuelbed
+        rv[[paste0(div_selector, "_df")]] <- df
       }
+
+      # create the species UI on this tab
+      removeUI(selector = "#species_div", immediate = TRUE)
+      insertUI(
+        selector = paste0("#", div_selector),  # Insert before this element
+        where = "beforeEnd",  # or "afterEnd", "beforeBegin", "afterBegin"
+        ui = div(
+          id = "species_div",
+          fluidRow(
+            column(12,
+                   actionButton("add_species", "Add Species",
+                                icon = icon("plus"),
+                                class = "btn-success"),
+                   hr(),
+                   DTOutput("species_table")
+            )
+          )
+        )
+      )
+
+      if(nrow(df) > 0) {
+        rv$species_df <- df
+      }
+      else {
+        rv$species_df <- data.frame(
+          id = integer(0),
+          species = character(0),
+          speciesTSN = integer(0),
+          relative_cover = numeric(0),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    loadFuelbedData <- function(fuelbed_id, session, rv, config) {
+      if (fuelbed_id == "" || is.null(fuelbed_id)) {
+        return(NULL)
+      }
+
+      message("User selected fuelbed: ", fuelbed_id)
+
+      # Load fuelbed file
+      fb_filename <- getFuelbedFilename(as.integer(fuelbed_id))
+      print(paste0("Loading fuelbed file: ", fb_filename))
+
+      fb_file <- paste0("fuelbeds/", fb_filename)
+      # check to see if fb_file exists
+      if(!file.exists(fb_file)) {
+        showNotification(paste("Fuelbed file not found:", fb_file, " Copy fuelbed xml files to fuelbeds/*.xml"), type = "error")
+        return(NULL)
+      }
+
+      fb_xml <- readLines(fb_file)
+      fb_doc <- xml2::read_xml(paste(fb_xml, collapse = "\n"))
+
+      # Extract layer node using xml_path from config
+      layer_node <- xml2::xml_find_first(fb_doc, config$xml_path)
+
+      if (is.na(layer_node)) {
+        warning(paste("Layer not found for path:", config$xml_path))
+        return(NULL)
+      }
+
+      species_nodes <- xml2::xml_find_all(layer_node, ".//species_description")
+
+      # Store in reactive values
+      rv[[config$rv_storage]] <- layer_node
+
+      # Update percent cover
+      percent_cover_node <- xml2::xml_find_first(layer_node, ".//percent_cover")
+      if (! is.na(percent_cover_node)) {
+        percent_cover <- as.numeric(xml2::xml_text(percent_cover_node))
+        updateNumericInput(session, config$pct_input, value = percent_cover)
+      }
+
+      # Update percent live
+      percent_live_node <- xml2::xml_find_first(layer_node, ".//percent_live")
+      if (!is.na(percent_live_node)) {
+        percent_live <- as.numeric(xml2:: xml_text(percent_live_node))
+        updateNumericInput(session, config$live_input, value = percent_live)
+      }
+
+      # Update height
+      height_node <- xml2::xml_find_first(layer_node, ".//height")
+      if (!is.na(height_node)) {
+        height <- as.numeric(xml2:: xml_text(height_node))
+        updateNumericInput(session, config$height_input, value = height)
+      }
+
+      # Update loading if present (optional field)
+      if (! is.null(config$loading_input)) {
+        loading_node <- xml2::xml_find_first(layer_node, ".//loading")
+        if (!is.na(loading_node)) {
+          loading <- as.numeric(xml2::xml_text(loading_node))
+          updateNumericInput(session, config$loading_input, value = loading)
+        }
+      }
+
+      # Return species nodes for potential UI creation
+      return(species_nodes)
+    }
+
+
+    # Create observers for all fuelbeds
+    lapply(names(FUELBED_CONFIGS), function(fuelbed_name) {
+      config <- FUELBED_CONFIGS[[fuelbed_name]]
+
+      observeEvent(input[[config$input_id]], {
+        species_nodes <- loadFuelbedData(
+          input[[config$input_id]],
+          session,
+          rv,
+          config
+        )
+
+        if (!is.null(species_nodes) &&
+            input$understory == config$understory_type &&
+            input[[config$tab_id]] == config$tab_value) {
+          createSpeciesUI(species_nodes, config$species_div, NULL)
+        }
+      })
     })
 
 
@@ -1565,16 +1896,6 @@ function(input, output, session) {
       }
     }
 
-    # # Initialize reactive values with sample data
-    # rv$species_df = data.frame(
-    #     id = 1:3,
-    #     species = c("Douglas Fir", "Ponderosa Pine", "Lodgepole Pine"),
-    #     speciesTSN = c(183706, 183710, 183712),
-    #     relative_cover = c(0.35, 0.40, 0.25),
-    #     stringsAsFactors = FALSE
-    #   )
-    # rv$next_id = 4  # To keep track of the next ID for new species
-
     # Render the table with action buttons
     output$species_table <- renderDT({
       df <- rv$species_df
@@ -1658,7 +1979,7 @@ function(input, output, session) {
         if (nrow(species_data) > 0) {
           # Update the text input
           updateTextInput(session, "edit_species",
-                          value = species_data$ScientificName)
+                          value = species_data$CommonName)
         }
       })
 
@@ -1680,6 +2001,37 @@ function(input, output, session) {
       }
     })
 
+    updateSpeciesForSelectedTab <- function() {
+      if(input$understory == "Shrubs1") {
+        if(input$Shrubs1_tabs == "shrub1_1fuelbedList") {
+          rv$shrub1_1_species_div_df <- rv$species_df
+        } else if(input$Shrubs1_tabs == "shrub1_2fuelbedList") {
+          rv$shrub1_2_species_div_df <- rv$species_df
+        }
+      }
+      if(input$understory == "Shrubs2") {
+        if(input$Shrubs2_tabs == "shrub2_1fuelbedList") {
+          rv$shrub2_1_species_div_df <- rv$species_df
+        } else if(input$Shrubs2_tabs == "shrub2_2fuelbedList") {
+          rv$shrub2_2_species_div_df <- rv$species_df
+        }
+      }
+      if(input$understory == "Herbs1") {
+        if(input$Herbs1_tabs == "herb1_1fuelbedList") {
+          rv$herb1_1_species_div_df <- rv$species_df
+        } else if(input$Herbs1_tabs == "herb1_2fuelbedList") {
+          rv$herb1_2_species_div_df <- rv$species_df
+        }
+      }
+      if(input$understory == "Herbs2") {
+        if(input$Herbs2_tabs == "herb2_1fuelbedList") {
+          rv$herb2_1_species_div_df <- rv$species_df
+        } else if(input$Herbs2_tabs == "herb2_2fuelbedList") {
+          rv$herb2_2_species_div_df <- rv$species_df
+        }
+      }
+    }
+
     # Save edited species
     observeEvent(input$save_edit, {
       id <- rv$editing_id
@@ -1688,6 +2040,8 @@ function(input, output, session) {
       rv$species_df[row_idx, "species"] <- input$edit_species
       rv$species_df[row_idx, "speciesTSN"] <- input$edit_species_select
       rv$species_df[row_idx, "relative_cover"] <- input$edit_relative_cover
+
+      updateSpeciesForSelectedTab()
       removeModal()
     })
 
@@ -1695,6 +2049,7 @@ function(input, output, session) {
     observeEvent(input$confirm_delete, {
       rv$species_df <- rv$species_df[rv$species_df$id != rv$deleting_id, ]
       removeModal()
+      updateSpeciesForSelectedTab()
     })
 
     # Add new species
@@ -1751,6 +2106,8 @@ function(input, output, session) {
 
       rv$species_df <- rbind(rv$species_df, new_row)
       rv$next_id <- rv$next_id + 1
+
+      updateSpeciesForSelectedTab()
 
       removeModal()
     })
