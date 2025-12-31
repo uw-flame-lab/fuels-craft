@@ -406,6 +406,11 @@ function(input, output, session) {
         # create a named list for updateSelectInput
         namedChoices <- setNames(suggested_fuelbeds$Value, paste(suggested_fuelbeds$Value, suggested_fuelbeds$FUELBED))
 
+        # add fuelbed zero if it is not in namedChoices
+        if(!("0 Bare Ground" %in% names(namedChoices))) {
+          namedChoices <- c("0 Bare Ground" = "0", namedChoices)
+        }
+
         updateSelectInput(session, "shrub1_1fuelbedList", choices = namedChoices)
         updateSelectInput(session, "shrub1_2fuelbedList", choices = namedChoices)
         updateSelectInput(session, "shrub2_1fuelbedList", choices = namedChoices)
@@ -414,6 +419,16 @@ function(input, output, session) {
         updateSelectInput(session, "herb1_2fuelbedList", choices = namedChoices)
         updateSelectInput(session, "herb2_1fuelbedList", choices = namedChoices)
         updateSelectInput(session, "herb2_2fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "downedFine_1fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "downedFine_2fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "downedCoarse_1fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "downedCoarse_2fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "llm_1fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "llm_2fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "ground_1fuelbedList", choices = namedChoices)
+        updateSelectInput(session, "ground_2fuelbedList", choices = namedChoices)
+
+
       } else {
         outputString <- paste0("area: ", area, " (too large, must be < 16 km^2)")
         output$area <- renderPrint({outputString})
@@ -766,9 +781,9 @@ function(input, output, session) {
     }
 
 
-    # Create observers for all fuelbeds
-    lapply(names(FUELBED_CONFIGS), function(fuelbed_name) {
-      config <- FUELBED_CONFIGS[[fuelbed_name]]
+    # Create observers for all fuelbed selects
+    lapply(names(FUELBED_CONFIGS), function(strata_name) {
+      config <- FUELBED_CONFIGS[[strata_name]]
 
       observeEvent(input[[config$input_id]], {
         species_nodes <- loadFuelbedData(
@@ -777,6 +792,28 @@ function(input, output, session) {
           rv,
           config
         )
+
+        # if this is shrub1_1fuelbedList and shrub1_1applyToAll is TRUE, then apply selected fuelbed
+        # to all other strata fuelbed1 selects
+        if(config$input_id == "shrub1_1fuelbedList" && input$shrub1_1applyToAll) {
+          updateSelectInput(session, "shrub2_1fuelbedList", selected = input$shrub1_1fuelbedList)
+          updateSelectInput(session, "herb1_1fuelbedList", selected = input$shrub1_1fuelbedList)
+          updateSelectInput(session, "herb2_1fuelbedList", selected = input$shrub1_1fuelbedList)
+          updateSelectInput(session, "downedFine_1fuelbedList", selected = input$shrub1_1fuelbedList)
+          updateSelectInput(session, "downedCoarse_1fuelbedList", selected = input$shrub1_1fuelbedList)
+          updateSelectInput(session, "llm_1fuelbedList", selected = input$shrub1_1fuelbedList)
+          updateSelectInput(session, "ground_1fuelbedList", selected = input$shrub1_1fuelbedList)
+        }
+
+        if(config$input_id == "shrub1_2fuelbedList" && input$shrub1_2applyToAll) {
+          updateSelectInput(session, "shrub2_2fuelbedList", selected = input$shrub1_2fuelbedList)
+          updateSelectInput(session, "herb1_2fuelbedList", selected = input$shrub1_2fuelbedList)
+          updateSelectInput(session, "herb2_2fuelbedList", selected = input$shrub1_2fuelbedList)
+          updateSelectInput(session, "downedFine_2fuelbedList", selected = input$shrub1_2fuelbedList)
+          updateSelectInput(session, "downedCoarse_2fuelbedList", selected = input$shrub1_2fuelbedList)
+          updateSelectInput(session, "llm_2fuelbedList", selected = input$shrub1_2fuelbedList)
+          updateSelectInput(session, "ground_2fuelbedList", selected = input$shrub1_2fuelbedList)
+        }
 
         if (!is.null(species_nodes) &&
             input$understory == config$understory_type &&

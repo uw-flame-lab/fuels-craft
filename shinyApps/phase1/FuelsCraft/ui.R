@@ -184,6 +184,7 @@ fluidPage(
                              wellPanel(
                                id="shrub1_1",
                                selectInput("shrub1_1fuelbedList", label=NULL, choices=NULL),
+                               checkboxInput("shrub1_1applyToAll", "apply selection to all strata", value=TRUE),
                                sliderInput("shrub1_1fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
                                radioButtons("shrub1_1spatialPattern", "Spatial pattern:",
                                         choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
@@ -204,6 +205,7 @@ fluidPage(
                               wellPanel(
                                 id="shrub1_2",
                                 selectInput("shrub1_2fuelbedList", label=NULL, choices=NULL),
+                                checkboxInput("shrub1_2applyToAll", "apply selection to all strata", value=TRUE),
                                 sliderInput("shrub1_2fuelbedPct", "Percent Cover",  min = 0, max = 100, value=50),
                                 radioButtons("shrub1_2spatialPattern", "Spatial pattern:",
                                              choices = c("Uniform", "Clumpy, random", "Clumpy, outside trees", "Clumpy, near trees"),
@@ -348,11 +350,12 @@ fluidPage(
                                                  choices = c("Beneath tree crowns", "Evenly distributed"),
                                                  selected = "Beneath tree crowns",
                                                  inline = TRUE),
-                                    sliderInput("downedFine_1fuelbedPct", "Percent Cover",  min = 0, max = 200, value=0),
-                                    sliderInput("downedFine_1fuelbedDepth", "Depth",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_1fuelbed1hrLoad", "1hr load",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_1fuelbed10hrLoad", "10hr load",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_1fuelbed100hrLoad", "100hr load",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
+                                    sliderInput("downedFine_1fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbed1hrLoad", "1hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbed10hrLoad", "10hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbed100hrLoad", "100hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    tags$div(id = "downedFine_1_species_div")
                                   )
                          ),
                          tabPanel("Fuelbed 2",
@@ -360,18 +363,257 @@ fluidPage(
                                   wellPanel(
                                     id="downedFine_2",
                                     selectInput("downedFine_2fuelbedList", label=NULL, choices=NULL),
-                                    radioButtons("downedFine_1spatialPattern", "Spatial pattern:",
+                                    radioButtons("downedFine_2spatialPattern", "Spatial pattern:",
                                                  choices = c("Beneath tree crowns", "Evenly distributed"),
                                                  selected = "Beneath tree crowns",
-                                                 inline = TRUE)                                    ),
-                                    sliderInput("downedFine_2fuelbedPct", "Percent Cover",  min = 0, max = 200, value=0),
-                                    sliderInput("downedFine_2fuelbedDepth", "Depth",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_2fuelbed1hrLoad", "1hr load",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_2fuelbed10hrLoad", "10hr load",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_2fuelbed100hrLoad", "100hr load",  min = 0, max = 10, value=0),
+                                                 inline = TRUE),
+                                    sliderInput("downedFine_2fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
+                                    sliderInput("downedFine_2fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbed1hrLoad", "1hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbed10hrLoad", "10hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbed100hrLoad", "100hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    tags$div(id = "downedFine_2_species_div")
                                   )
+                         )
                        ),
                      ),
+                     conditionalPanel(
+                       condition = "input.understory == 'Downed Wood: coarse wood'",
+                       tabsetPanel(
+                         id="DownedCoarse_tabs",
+                         tabPanel("Fuelbed 1",
+                                  value="downedCoarse_1fuelbedList",
+                                  wellPanel(
+                                    id="downedCoarse_1",
+                                    selectInput("downedCoarse_1fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("downedCoarseSound_1fuelbed1000hrLoad", "Sound 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseSound_1fuelbed10000hrLoad", "Sound 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseSound_1fuelbed10000+hrLoad", "Sound >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_1fuelbed1000hrLoad", "Rotten 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_1fuelbed10000hrLoad", "Rotten 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_1fuelbed10000+hrLoad", "Rotten >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    tags$div(id = "downedCoarse_1_species_div")
+                                  )
+                         ),
+                         tabPanel("Fuelbed 2",
+                                  value="downedCoarse_2fuelbedList",
+                                  wellPanel(
+                                    id="downedCoarse_2",
+                                    selectInput("downedCoarse_2fuelbedList", label=NULL, choices=NULL),
+                                    sliderInput("downedCoarseSound_2fuelbed1000hrLoad", "Sound 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseSound_2fuelbed10000hrLoad", "Sound 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseSound_2fuelbed10000+hrLoad", "Sound >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_2fuelbed1000hrLoad", "Rotten 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_2fuelbed10000hrLoad", "Rotten 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_2fuelbed10000+hrLoad", "Rotten >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    tags$div(id = "downedCoarse_2_species_div")
+                                  )
+                         )
+                       )
+                     ),
+                     conditionalPanel(
+                       condition = "input.understory == 'Litter, Lichen, Moss'",
+                       tabsetPanel(
+                         id="LLM_tabs",
+                         tabPanel("Fuelbed 1",
+                            value="llm_1fuelbedList",
+                            wellPanel(
+                              id="llm_1",
+                              selectInput("llm_1fuelbedList", label=NULL, choices=NULL),
+                              radioButtons("llm_1spatialPattern", "Spatial pattern:",
+                                           choices = c("Only under tree crowns", "Evenly distributed"),
+                                           selected = "Only under tree crowns",
+                                           inline = TRUE),
+                              sliderInput("llm_1fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
+                              sliderInput("llm_1fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
+                              sliderInput("llm_1fuelbedLoad", "Loading (kg/m2)",  min = 0, max = 20, value=0),
+                              radioButtons("llm_1arrangement", "Arrangement:",
+                                           choices = c("Suspended", "Freshly Fallen", "Normal", "Compact"),
+                                           selected = "Freshly Fallen",
+                                           inline = TRUE),
+                              numericInput("llm_1bulkDensity", "Bulk Density (kg/m3):", min = 0, max = 100, value = 0),
+                              # litter type table (Type and Relative Cover)
+                              tags$table(
+                                class = "table table-striped",
+                                tags$thead(
+                                  tags$tr(
+                                    tags$th("Type", style = "width:  60%"),
+                                    tags$th("Relative Cover (%)", style = "width: 40%")
+                                  )
+                                ),
+                                tags$tbody(
+                                  tags$tr(
+                                    tags$td(strong("Short needle pine")),
+                                    tags$td(numericInput(inputId = "litter1_snp",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Long needle pine")),
+                                    tags$td(numericInput(inputId = "litter1_lnp",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Other conifer")),
+                                    tags$td(numericInput(inputId = "litter1_oc",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Broadleaf deciduous")),
+                                    tags$td(numericInput(inputId = "litter1_bd",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Broadleaf evergreen")),
+                                    tags$td(numericInput(inputId = "litter1_be",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Palm frond")),
+                                    tags$td(numericInput(inputId = "litter1_pf",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Grass")),
+                                    tags$td(numericInput(inputId = "litter1_grass",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                )
+                              ),
+
+                            )
+                         ),
+                         tabPanel("Fuelbed 2",
+                            value="llm_2fuelbedList",
+                            wellPanel(
+                              id="llm_2",
+                              selectInput("llm_2fuelbedList", label=NULL, choices=NULL),
+                              radioButtons("llm_2spatialPattern", "Spatial pattern:",
+                                           choices = c("Only under tree crowns", "Evenly distributed"),
+                                           selected = "Only under tree crowns",
+                                           inline = TRUE),
+                              sliderInput("llm_2fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
+                              sliderInput("llm_2fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
+                              sliderInput("llm_2fuelbedLoad", "Loading (kg/m2)",  min = 0, max = 20, value=0),
+                              radioButtons("llm_2arrangement", "Arrangement:",
+                                           choices = c("Suspended", "Freshly Fallen", "Normal", "Compact"),
+                                           selected = "Freshly Fallen",
+                                           inline = TRUE),
+                              numericInput("llm_2bulkDensity", "Bulk Density (kg/m3):", min = 0, max = 100, value = 0),
+                              # litter type table (Type and Relative Cover)
+                              tags$table(
+                                class = "table table-striped",
+                                tags$thead(
+                                  tags$tr(
+                                    tags$th("Type", style = "width:  60%"),
+                                    tags$th("Relative Cover (%)", style = "width: 40%")
+                                  )
+                                ),
+                                tags$tbody(
+                                  tags$tr(
+                                    tags$td(strong("Short needle pine")),
+                                    tags$td(numericInput(inputId = "litter2_snp",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Long needle pine")),
+                                    tags$td(numericInput(inputId = "litter2_lnp",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Other conifer")),
+                                    tags$td(numericInput(inputId = "litter2_oc",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Broadleaf deciduous")),
+                                    tags$td(numericInput(inputId = "litter2_bd",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Broadleaf evergreen")),
+                                    tags$td(numericInput(inputId = "litter2_be",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Palm frond")),
+                                    tags$td(numericInput(inputId = "litter2_pf",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                  tags$tr(
+                                    tags$td(strong("Grass")),
+                                    tags$td(numericInput(inputId = "litter2_grass",
+                                                         label = NULL, value = 0, min = 0, max = 100, width = "120px")
+                                    )
+                                  ),
+                                )
+                              ),
+                            )
+                         )
+                       )
+                     ),
+                     conditionalPanel(
+                       condition = "input.understory == 'Ground Fuels'",
+                       tabsetPanel(
+                         id="groundFuel_tabs",
+                         tabPanel("Fuelbed 1",
+                           value="ground_1fuelbedList",
+                             wellPanel(
+                               id="groundFuels_1",
+                               selectInput("ground_1fuelbedList", label=NULL, choices=NULL),
+                               radioButtons("ground_1spatialPattern", "Spatial pattern:",
+                                            choices = c("Only under tree crowns", "Evenly distributed"),
+                                            selected = "Only under tree crowns",
+                                            inline = TRUE),
+                               sliderInput("ground_1fuelbedUpperPct", "Upper Duff Cover (%)",  min = 0, max = 100, value=0),
+                               sliderInput("ground_1fuelbedUpperDepth", "Upper Duff Depth (cm)",  min = 0, max = 50, value=0),
+                               sliderInput("ground_1fuelbedUpperLoad", "Upper Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                               sliderInput("ground_1fuelbedLowerPct", "Lower Duff Cover (%)",  min = 0, max = 100, value=0),
+                               sliderInput("ground_1fuelbedLowerDepth", "Lower Duff Depth (cm)",  min = 0, max = 50, value=0),
+                               sliderInput("ground_1fuelbedLowerLoad", "Lower Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                               radioButtons("ground_1duffDerivation", "Duff Derivation:",
+                                            choices = c("Other", "Sphagnum"),
+                                            selected = "Other",
+                                            inline = TRUE),
+                               tags$div(id = "ground_fuels_type_div")
+                             )
+                         ),
+                         tabPanel("Fuelbed 2",
+                                  value="ground_2fuelbedList",
+                                  wellPanel(
+                                    id="groundFuels_2",
+                                    selectInput("ground_2fuelbedList", label=NULL, choices=NULL),
+                                    radioButtons("ground_2spatialPattern", "Spatial pattern:",
+                                                 choices = c("Only under tree crowns", "Evenly distributed"),
+                                                 selected = "Only under tree crowns",
+                                                 inline = TRUE),
+                                    sliderInput("ground_2fuelbedUpperPct", "Upper Duff Cover (%)",  min = 0, max = 100, value=0),
+                                    sliderInput("ground_2fuelbedUpperDepth", "Upper Duff Depth (cm)",  min = 0, max = 50, value=0),
+                                    sliderInput("ground_2fuelbedUpperLoad", "Upper Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                                    sliderInput("ground_2fuelbedLowerPct", "Lower Duff Cover (%)",  min = 0, max = 100, value=0),
+                                    sliderInput("ground_2fuelbedLowerDepth", "Lower Duff Depth (cm)",  min = 0, max = 50, value=0),
+                                    sliderInput("ground_2fuelbedLowerLoad", "Lower Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                                    radioButtons("ground_2duffDerivation", "Duff Derivation:",
+                                                 choices = c("Other", "Sphagnum"),
+                                                 selected = "Other",
+                                                 inline = TRUE),
+                                    tags$div(id = "ground_fuels_type_div")
+                                  )
+                         ),
+                       )
+                     )
                    )
             ),
             fluidRow(
@@ -389,7 +631,6 @@ fluidPage(
         # selectInput("customTreeAttribute", "Tree Attribute", choices=NULL),
         # sliderInput("customTreeAttributeChange", "Change Tree Attribute by %", min = 0, max = 200, value = 100),
         # add hist
-
     )
   )
 )
