@@ -1736,7 +1736,7 @@ function(input, output, session) {
 #        addRasterImage(r_raster, colors = pal, opacity = 0.9) %>%   # use this to show masked raster (just polygon area)
         addRasterImage(rv$enclosing_raster, colors = pal, opacity = 0.9) %>%
         addPolygons(data = sf_object, fill = FALSE, color = mainPolygonColor, weight = 3, opacity = 0.9) %>%
-        addLegend("bottomright", pal = pal, values = unique_vals, opacity="1", title = "Category", layerId="fuelbedLegend") %>%
+        addLegend("topright", pal = pal, values = unique_vals, opacity="1", title = "Fuelbed", layerId="fuelbedLegend") %>%
         fitBounds(e[1], e[3], e[2], e[4])
 
       # temp_df contains all the fuelbeds in the enclosing raster

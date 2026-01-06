@@ -63,6 +63,36 @@ fluidPage(
       }, 100);  // 100ms delay
     });
   "))),
+  # Add CSS for scrollable legend
+  tags$head(
+    tags$style(HTML("
+      .leaflet-control-layers,
+      .info.legend {
+        max-height: 330px ! important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+      }
+
+      /* Style the scrollbar */
+      .info.legend::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .info.legend::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
+
+      .info.legend::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
+
+      .info.legend::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    "))
+  ),
 
   # Application title
     titlePanel("FuelsCraft Fuel Customization Tool"),
