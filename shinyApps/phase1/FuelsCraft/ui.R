@@ -381,10 +381,10 @@ fluidPage(
                                                  selected = "Beneath tree crowns",
                                                  inline = TRUE),
                                     sliderInput("downedFine_1fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
-                                    sliderInput("downedFine_1fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_1fuelbed1hrLoad", "1hr load (kg/m2)",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_1fuelbed10hrLoad", "10hr load (kg/m2)",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_1fuelbed100hrLoad", "100hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_1fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0, step=0.1),
+                                    sliderInput("downedFine_1fuelbed1hrLoad", "1hr load (kg/m2)",  min = 0, max = 10, value=0, step=0.1),
+                                    sliderInput("downedFine_1fuelbed10hrLoad", "10hr load (kg/m2)",  min = 0, max = 10, value=0, step=0.1),
+                                    sliderInput("downedFine_1fuelbed100hrLoad", "100hr load (kg/m2)",  min = 0, max = 10, value=0, step=0.1),
                                     tags$div(id = "downedFine_1_species_div")
                                   )
                          ),
@@ -398,10 +398,10 @@ fluidPage(
                                                  selected = "Beneath tree crowns",
                                                  inline = TRUE),
                                     sliderInput("downedFine_2fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
-                                    sliderInput("downedFine_2fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_2fuelbed1hrLoad", "1hr load (kg/m2)",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_2fuelbed10hrLoad", "10hr load (kg/m2)",  min = 0, max = 10, value=0),
-                                    sliderInput("downedFine_2fuelbed100hrLoad", "100hr load (kg/m2)",  min = 0, max = 10, value=0),
+                                    sliderInput("downedFine_2fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0, step=0.1),
+                                    sliderInput("downedFine_2fuelbed1hrLoad", "1hr load (kg/m2)",  min = 0, max = 10, value=0, step=0.1),
+                                    sliderInput("downedFine_2fuelbed10hrLoad", "10hr load (kg/m2)",  min = 0, max = 10, value=0, step=0.1),
+                                    sliderInput("downedFine_2fuelbed100hrLoad", "100hr load (kg/m2)",  min = 0, max = 10, value=0, step=0.1),
                                     tags$div(id = "downedFine_2_species_div")
                                   )
                          )
@@ -455,7 +455,7 @@ fluidPage(
                                            selected = "Only under tree crowns",
                                            inline = TRUE),
                               sliderInput("llm_1fuelbedPct", "Percent Cover (%)",  min = 0, max = 100, value=0),
-                              sliderInput("llm_1fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0),
+                              sliderInput("llm_1fuelbedDepth", "Depth (cm)",  min = 0, max = 10, value=0, step=0.1),
                               sliderInput("llm_1fuelbedLoad", "Loading (kg/m2)",  min = 0, max = 20, value=0),
                               radioButtons("llm_1arrangement", "Arrangement:",
                                            choices = c("Suspended", "Freshly Fallen", "Normal", "Compact"),
@@ -474,43 +474,43 @@ fluidPage(
                                 tags$tbody(
                                   tags$tr(
                                     tags$td(strong("Short needle pine")),
-                                    tags$td(numericInput(inputId = "litter1_snp",
+                                    tags$td(numericInput(inputId = "llm_1snp",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Long needle pine")),
-                                    tags$td(numericInput(inputId = "litter1_lnp",
+                                    tags$td(numericInput(inputId = "llm_1lnp",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Other conifer")),
-                                    tags$td(numericInput(inputId = "litter1_oc",
+                                    tags$td(numericInput(inputId = "llm_1oc",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Broadleaf deciduous")),
-                                    tags$td(numericInput(inputId = "litter1_bd",
+                                    tags$td(numericInput(inputId = "llm_1bd",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Broadleaf evergreen")),
-                                    tags$td(numericInput(inputId = "litter1_be",
+                                    tags$td(numericInput(inputId = "llm_1be",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Palm frond")),
-                                    tags$td(numericInput(inputId = "litter1_pf",
+                                    tags$td(numericInput(inputId = "llm_1pf",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Grass")),
-                                    tags$td(numericInput(inputId = "litter1_grass",
+                                    tags$td(numericInput(inputId = "llm_1grass",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
@@ -548,43 +548,43 @@ fluidPage(
                                 tags$tbody(
                                   tags$tr(
                                     tags$td(strong("Short needle pine")),
-                                    tags$td(numericInput(inputId = "litter2_snp",
+                                    tags$td(numericInput(inputId = "llm_2snp",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Long needle pine")),
-                                    tags$td(numericInput(inputId = "litter2_lnp",
+                                    tags$td(numericInput(inputId = "llm_2lnp",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Other conifer")),
-                                    tags$td(numericInput(inputId = "litter2_oc",
+                                    tags$td(numericInput(inputId = "llm_2oc",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Broadleaf deciduous")),
-                                    tags$td(numericInput(inputId = "litter2_bd",
+                                    tags$td(numericInput(inputId = "llm_2bd",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Broadleaf evergreen")),
-                                    tags$td(numericInput(inputId = "litter2_be",
+                                    tags$td(numericInput(inputId = "llm_2be",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Palm frond")),
-                                    tags$td(numericInput(inputId = "litter2_pf",
+                                    tags$td(numericInput(inputId = "llm_2pf",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
                                   tags$tr(
                                     tags$td(strong("Grass")),
-                                    tags$td(numericInput(inputId = "litter2_grass",
+                                    tags$td(numericInput(inputId = "llm_2grass",
                                                          label = NULL, value = 0, min = 0, max = 100, width = "120px")
                                     )
                                   ),
@@ -607,13 +607,13 @@ fluidPage(
                                             choices = c("Only under tree crowns", "Evenly distributed"),
                                             selected = "Only under tree crowns",
                                             inline = TRUE),
-                               sliderInput("ground_1fuelbedUpperPct", "Upper Duff Cover (%)",  min = 0, max = 100, value=0),
-                               sliderInput("ground_1fuelbedUpperDepth", "Upper Duff Depth (cm)",  min = 0, max = 50, value=0),
-                               sliderInput("ground_1fuelbedUpperLoad", "Upper Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
-                               sliderInput("ground_1fuelbedLowerPct", "Lower Duff Cover (%)",  min = 0, max = 100, value=0),
-                               sliderInput("ground_1fuelbedLowerDepth", "Lower Duff Depth (cm)",  min = 0, max = 50, value=0),
-                               sliderInput("ground_1fuelbedLowerLoad", "Lower Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
-                               radioButtons("ground_1duffDerivation", "Duff Derivation:",
+                               sliderInput("ground_1upperPct", "Upper Duff Cover (%)",  min = 0, max = 100, value=0),
+                               sliderInput("ground_1upperDepth", "Upper Duff Depth (cm)",  min = 0, max = 50, value=0),
+                               sliderInput("ground_1upperLoad", "Upper Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                               sliderInput("ground_1lowerPct", "Lower Duff Cover (%)",  min = 0, max = 100, value=0),
+                               sliderInput("ground_1lowerDepth", "Lower Duff Depth (cm)",  min = 0, max = 50, value=0),
+                               sliderInput("ground_1lowerLoad", "Lower Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                               radioButtons("ground_1derivation", "Duff Derivation:",
                                             choices = c("Other", "Sphagnum"),
                                             selected = "Other",
                                             inline = TRUE),
@@ -629,13 +629,13 @@ fluidPage(
                                                  choices = c("Only under tree crowns", "Evenly distributed"),
                                                  selected = "Only under tree crowns",
                                                  inline = TRUE),
-                                    sliderInput("ground_2fuelbedUpperPct", "Upper Duff Cover (%)",  min = 0, max = 100, value=0),
-                                    sliderInput("ground_2fuelbedUpperDepth", "Upper Duff Depth (cm)",  min = 0, max = 50, value=0),
-                                    sliderInput("ground_2fuelbedUpperLoad", "Upper Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
-                                    sliderInput("ground_2fuelbedLowerPct", "Lower Duff Cover (%)",  min = 0, max = 100, value=0),
-                                    sliderInput("ground_2fuelbedLowerDepth", "Lower Duff Depth (cm)",  min = 0, max = 50, value=0),
-                                    sliderInput("ground_2fuelbedLowerLoad", "Lower Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
-                                    radioButtons("ground_2duffDerivation", "Duff Derivation:",
+                                    sliderInput("ground_2upperPct", "Upper Duff Cover (%)",  min = 0, max = 100, value=0),
+                                    sliderInput("ground_2upperDepth", "Upper Duff Depth (cm)",  min = 0, max = 50, value=0),
+                                    sliderInput("ground_2upperLoad", "Upper Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                                    sliderInput("ground_2lowerPct", "Lower Duff Cover (%)",  min = 0, max = 100, value=0),
+                                    sliderInput("ground_2lowerDepth", "Lower Duff Depth (cm)",  min = 0, max = 50, value=0),
+                                    sliderInput("ground_2lowerLoad", "Lower Duff Loading (kg/m2)",  min = 0, max = 50, value=0),
+                                    radioButtons("ground_2derivation", "Duff Derivation:",
                                                  choices = c("Other", "Sphagnum"),
                                                  selected = "Other",
                                                  inline = TRUE),

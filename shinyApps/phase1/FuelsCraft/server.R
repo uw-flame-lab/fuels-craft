@@ -7,6 +7,9 @@
 #    https://shiny.posit.co/
 #
 
+INCHES_TO_CM = 2.54
+TONS_PER_ACRE_TO_KG_PER_M2 = 0.22417
+
 # Define configuration for all fuelbeds (shrubs and herbs)
 FUELBED_CONFIGS <- list(
   # Shrub1 configs
@@ -119,7 +122,140 @@ FUELBED_CONFIGS <- list(
     understory_type = "Herbs2",
     tab_id = "Herbs2_tabs",
     tab_value = "herb2_2fuelbedList"
+  ),
+  downedWood_fine_1 = list(
+    input_id = "downedFine_1fuelbedList",
+    rv_storage = "downedFine1_xml",
+    xml_path = ".//woody_fuel",
+    pct_input = "downedFine_1fuelbedPct",
+    depth_input = "downedFine_1fuelbedDepth",
+    one_hour_load_input = "downedFine_1fuelbed1hrLoad",
+    ten_hour_load_input = "downedFine_1fuelbed10hrLoad",
+    hundred_hour_load_input = "downedFine_1fuelbed100hrLoad",
+    species_div = "downedFine_1_species_div",
+    understory_type = "Downed Wood: fine wood",
+    tab_id = "DownedFine_tabs",
+    tab_value = "downedFine_1fuelbedList"
+  ),
+  downedWood_fine_2 = list(
+    input_id = "downedFine_2fuelbedList",
+    rv_storage = "downedFine2_xml",
+    xml_path = ".//woody_fuel",
+    pct_input = "downedFine_2fuelbedPct",
+    depth_input = "downedFine_2fuelbedDepth",
+    one_hour_load_input = "downedFine_2fuelbed1hrLoad",
+    ten_hour_load_input = "downedFine_2fuelbed10hrLoad",
+    hundred_hour_load_input = "downedFine_2fuelbed100hrLoad",
+    species_div = "downedFine_2_species_div",
+    understory_type = "Downed Wood: fine wood",
+    tab_id = "DownedFine_tabs",
+    tab_value = "downedFine_2fuelbedList"
+  ),
+  downedWood_coarse_1 = list(
+    input_id = "downedCoarse_1fuelbedList",
+    rv_storage = "downedCoarse_1_xml",
+    xml_path = ".//woody_fuel",
+    pct_input = "downedCoarse_1fuelbedPct",
+    depth_input = "downedCoarse_1depth",
+    one_thousand_hour_sound_input = "downedCoarseSound_1fuelbed1000hrLoad",
+    ten_thousand_hour_sound_input = "downedCoarseSound_1fuelbed10000hrLoad",
+    gt_ten_thousand_hour_sound_input = "downedCoarseSound_1fuelbed10000+hrLoad",
+    one_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed1000hrLoad",
+    ten_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed10000hrLoad",
+    gt_ten_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed10000+hrLoad",
+    species_div = "downedCoarse_1_species_div",
+    understory_type = "Downed Wood: coarse wood",
+    tab_id = "DownedCoarse_tabs",
+    tab_value = "downedCoarse_1fuelbedList"
+  ),
+  downedWood_coarse_2 = list(
+    input_id = "downedCoarse_2fuelbedList",
+    rv_storage = "downedCoarse_2_xml",
+    xml_path = ".//woody_fuel",
+    pct_input = "downedCoarse_2fuelbedPct",
+    depth_input = "downedCoarse_2depth",
+    one_thousand_hour_sound_input = "downedCoarseSound_2fuelbed1000hrLoad",
+    ten_thousand_hour_sound_input = "downedCoarseSound_2fuelbed10000hrLoad",
+    gt_ten_thousand_hour_sound_input = "downedCoarseSound_2fuelbed10000+hrLoad",
+    one_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed1000hrLoad",
+    ten_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed10000hrLoad",
+    gt_ten_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed10000+hrLoad",
+    species_div = "downedCoarse_2_species_div",
+    understory_type = "Downed Wood: coarse wood",
+    tab_id = "DownedCoarse_tabs",
+    tab_value = "downedCoarse_2fuelbedList"
+  ),
+  llm_1 = list(
+    input_id = "llm_1fuelbedList",
+    rv_storage = "llm1_xml",
+    xml_path = ".//moss_lichen_litter",
+    pct_input = "llm_1fuelbedPct",
+    depth_input = "llm_1fuelbedDepth",
+    loading_input = "llm_1fuelbedLoading",
+    arrangement_input = "llm_1arrangement",
+    snp_input = "llm_1snp",
+    lnp_input = "llm_1lnp",
+    oc_input = "llm_1oc",
+    bd_input = "llm_1bd",
+    be_input = "llm_1be",
+    pf_input = "llm_1pf",
+    grass_input = "llm_1grass",
+#    species_div = "llm_1_species_div",
+    understory_type = "Litter Lichen Moss",
+    tab_id = "LLM_tabs",
+    tab_value = "llm_1fuelbedList"
+  ),
+  llm_2 = list(
+    input_id = "llm_2fuelbedList",
+    rv_storage = "llm2_xml",
+    xml_path = ".//moss_lichen_litter",
+    pct_input = "llm_2fuelbedPct",
+    depth_input = "llm_2fuelbedDepth",
+    loading_input = "llm_2fuelbedLoading",
+    arrangement_input = "llm_2arrangement",
+    snp_input = "llm_2snp",
+    lnp_input = "llm_2lnp",
+    oc_input = "llm_2oc",
+    bd_input = "llm_2bd",
+    be_input = "llm_2be",
+    pf_input = "llm_2pf",
+    grass_input = "llm_2grass",
+#    species_div = "llm_2_species_div",
+    understory_type = "Litter Lichen Moss",
+    tab_id = "LLM_tabs",
+    tab_value = "llm_2fuelbedList"
+  ),
+  ground_1 = list(
+    input_id = "ground_1fuelbedList",
+    rv_storage = "ground1_xml",
+    xml_path = ".//ground_fuel",
+    upper_pct_input = "ground_1upperPct",
+    upper_depth_input = "ground_1upperDepth",
+    upper_loading_input = "ground_1upperLoading",
+    lower_pct_input = "ground_1lowerPct",
+    lower_depth_input = "ground_1lowerDepth",
+    lower_loading_input = "ground_1lowerLoading",
+    derivation_input = "ground_1derivation",
+    understory_type = "Ground Fuels",
+    tab_id = "Ground_tabs",
+    tab_value = "ground_1fuelbedList"
+  ),
+  ground_2 = list(
+    input_id = "ground_2fuelbedList",
+    rv_storage = "ground2_xml",
+    xml_path = ".//ground_fuel",
+    upper_pct_input = "ground_2upperPct",
+    upper_depth_input = "ground_2upperDepth",
+    upper_loading_input = "ground_2upperLoading",
+    lower_pct_input = "ground_2lowerPct",
+    lower_depth_input = "ground_2lowerDepth",
+    lower_loading_input = "ground_2lowerLoading",
+    derivation_input = "ground_2derivation",
+    understory_type = "Ground Fuels",
+    tab_id = "Ground_tabs",
+    tab_value = "ground_2fuelbedList"
   )
+
 )
 
 function(input, output, session) {
@@ -400,7 +536,6 @@ function(input, output, session) {
         output$area <- renderPrint({outputString})
         updateActionButton(session, "createDomain", disabled = FALSE)
         # get list of suggested fuelbeds from rlandfire and populate fuelbedList
-        #      suggested_fuelbeds <- getSuggestedFuelbeds(sf_object)
         suggested_fuelbeds <- getSuggestedFuelbeds2(sf_object)
 
         # create a named list for updateSelectInput
@@ -410,6 +545,7 @@ function(input, output, session) {
         if(!("0 Bare Ground" %in% names(namedChoices))) {
           namedChoices <- c("0 Bare Ground" = "0", namedChoices)
         }
+        namedChoices <- c("Show All Fuelbeds" = "-1", namedChoices)
 
         updateSelectInput(session, "shrub1_1fuelbedList", choices = namedChoices)
         updateSelectInput(session, "shrub1_2fuelbedList", choices = namedChoices)
@@ -462,52 +598,140 @@ function(input, output, session) {
           species_nodes <- xml2::xml_find_all(rv$shrubs1_1_xml, ".//species_description")
           createSpeciesUI(species_nodes, "shrub1_1_species_div", rv$shrub1_1_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Shrubs1_tabs)
+        loadRasterForFuelbed(input$Shrubs1_tabs)
       }
       if(input$understory == "Shrubs1" && input$Shrubs1_tabs == "shrub1_2fuelbedList"){
         if(!is.null(rv$shrubs1_2_xml)) {
           species_nodes <- xml2::xml_find_all(rv$shrubs1_2_xml, ".//species_description")
           createSpeciesUI(species_nodes, "shrub1_2_species_div", rv$shrub1_2_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Shrubs1_tabs)
+        loadRasterForFuelbed(input$Shrubs1_tabs)
       }
       if(input$understory == "Shrubs2" && input$Shrubs2_tabs == "shrub2_1fuelbedList"){
         if(!is.null(rv$shrubs2_1_xml)) {
           species_nodes <- xml2::xml_find_all(rv$shrubs2_1_xml, ".//species_description")
           createSpeciesUI(species_nodes, "shrub2_1_species_div", rv$shrub2_1_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Shrubs2_tabs)
+        loadRasterForFuelbed(input$Shrubs2_tabs)
       }
       if(input$understory == "Shrubs2" && input$Shrubs2_tabs == "shrub2_2fuelbedList"){
         if(!is.null(rv$shrubs2_2_xml)) {
           species_nodes <- xml2::xml_find_all(rv$shrubs2_2_xml, ".//species_description")
           createSpeciesUI(species_nodes, "shrub2_2_species_div", rv$shrub2_2_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Shrubs2_tabs)
+        loadRasterForFuelbed(input$Shrubs2_tabs)
       }
       if(input$understory == "Herbs1" && input$Herbs1_tabs == "herb1_1fuelbedList"){
         if(!is.null(rv$herbs1_1_xml)) {
           species_nodes <- xml2::xml_find_all(rv$herbs1_1_xml, ".//species_description")
           createSpeciesUI(species_nodes, "herb1_1_species_div", rv$herb1_1_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Herbs1_tabs)
+        loadRasterForFuelbed(input$Herbs1_tabs)
       }
       if(input$understory == "Herbs1" && input$Herbs1_tabs == "herb1_2fuelbedList"){
         if(!is.null(rv$herbs1_2_xml)) {
           species_nodes <- xml2::xml_find_all(rv$herbs1_2_xml, ".//species_description")
           createSpeciesUI(species_nodes, "herb1_2_species_div", rv$herb1_2_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Herbs1_tabs)
+        loadRasterForFuelbed(input$Herbs1_tabs)
       }
       if(input$understory == "Herbs2" && input$Herbs2_tabs == "herb2_1fuelbedList"){
         if(!is.null(rv$herbs2_1_xml)) {
           species_nodes <- xml2::xml_find_all(rv$herbs2_1_xml, ".//species_description")
           createSpeciesUI(species_nodes, "herb2_1_species_div", rv$herb2_1_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Herbs2_tabs)
+        loadRasterForFuelbed(input$Herbs2_tabs)
       }
       if(input$understory == "Herbs2" && input$Herbs2_tabs == "herb2_2fuelbedList"){
         if(!is.null(rv$herbs2_2_xml)) {
           species_nodes <- xml2::xml_find_all(rv$herbs2_2_xml, ".//species_description")
           createSpeciesUI(species_nodes, "herb2_2_species_div", rv$herb2_2_species_div_df)
         }
+        loadPolygonsForFuelbed(input$Herbs2_tabs)
+        loadRasterForFuelbed(input$Herbs2_tabs)
       }
     })
 
+    loadRasterForFuelbed <- function(selectedFuelbedTab)
+    {
+      tempRaster <- rv$enclosing_raster
+      if(!is.null(tempRaster)) {
+
+        target_fb <- as.integer(input[[selectedFuelbedTab]])
+        if(is.na(target_fb)) {
+          return(NULL)
+        }
+
+        # remove existing fuelbed layer
+        proxy <- leafletProxy("subMap")
+        proxy %>% clearGroup("fuelbed_layer")
+
+        if(target_fb == -1) {
+          return(NULL)
+        }
+
+        # make a raster that only has one FUELBED value
+        fb_raster <- tempRaster
+        fb_raster[fb_raster[] != target_fb] <- NA
+
+        # get a polygon that outlines rv$enclosing_raster
+        r_ext <- terra::ext(tempRaster)
+        rect_coords <- matrix(c(r_ext[1], r_ext[3],
+                                r_ext[1], r_ext[4],
+                                r_ext[2], r_ext[4],
+                                r_ext[2], r_ext[3],
+                                r_ext[1], r_ext[3]),
+                              ncol = 2, byrow = TRUE)
+        raster_outline_polygon <- st_polygon(list(rect_coords))
+
+        # Get the color table
+        color_table <- coltab(tempRaster)[[1]]
+
+        # Extract RGB for specific value (e.g., 52)
+        rgb_row <- color_table[color_table[,1] == target_fb, ]
+
+        # Convert RGB to hex color
+        rgb_color <- rgb(rgb_row[2], rgb_row[3], rgb_row[4], maxColorValue = 255)
+
+        pal <- colorNumeric(
+          palette = rgb_color,
+          domain = target_fb,
+          na.color = "white"  # All NA values become white
+        )
+
+        # add new fuelbed layer
+        if(!is.null(fb_raster)) {
+          proxy %>%
+            addRasterImage(fb_raster, colors = pal, opacity = 0.9, group = "fuelbed_layer") %>%
+            addLayersControl(
+              overlayGroups = c("fuelbed_layer"),
+              options = layersControlOptions(collapsed = FALSE)
+            )
+        }
+      }
+
+    }
+
+    removePolygonsForFuelbed <- function(selectedFuelbedTab)
+    {
+      # remove existing polgons from subMap
+      proxy <- leafletProxy("subMap")
+      proxy %>% clearGroup("understory_polygons")
+
+      # remove polygons from rv$understory_sf that have fuelbedTab == selectedFuelbedTab
+      rv$understory_sf <- rv$understory_sf %>% filter(fuelbedTab != selectedFuelbedTab)
+    }
+
     loadPolygonsForFuelbed <- function(selectedFuelbedTab) {
+      # selectedFuelbedTab is the name of the fuelbed selectInput, e.g., "shrub1_1fuelbedList"
+
       # remove existing polgons from subMap
       proxy <- leafletProxy("subMap")
       proxy %>% clearGroup("understory_polygons")
@@ -539,6 +763,7 @@ function(input, output, session) {
       # this happens when user changes fuelbed 1/2 tabs within Shrubs1
       message("User selected tab: ", input$Shrubs1_tabs)
       loadPolygonsForFuelbed(input$Shrubs1_tabs)
+      loadRasterForFuelbed(input$Shrubs1_tabs)
       if(input$Shrubs1_tabs == 'shrub1_1fuelbedList'){
           if(!is.null(rv$shrubs1_1_xml)) {
             species_nodes <- xml2::xml_find_all(rv$shrubs1_1_xml, ".//species_description")
@@ -557,6 +782,7 @@ function(input, output, session) {
       # this happens when user changes fuelbed 1/2 tabs within Shrubs2
       message("User selected tab: ", input$Shrubs2_tabs)
       loadPolygonsForFuelbed(input$Shrubs2_tabs)
+      loadRasterForFuelbed(input$Shrubs2_tabs)
       if(input$Shrubs2_tabs == 'shrub2_1fuelbedList'){
         if(!is.null(rv$shrubs2_1_xml)) {
           species_nodes <- xml2::xml_find_all(rv$shrubs2_1_xml, ".//species_description")
@@ -575,6 +801,7 @@ function(input, output, session) {
       # this happens when user changes fuelbed 1/2 tabs within Herbs1
       message("User selected tab: ", input$Herbs1_tabs)
       loadPolygonsForFuelbed(input$Herbs1_tabs)
+      loadRasterForFuelbed(input$Herbs1_tabs)
       if(input$Herbs1_tabs == 'herb1_1fuelbedList'){
         if(!is.null(rv$herbs1_1_xml)) {
           species_nodes <- xml2::xml_find_all(rv$herbs1_1_xml, ".//species_description")
@@ -593,6 +820,7 @@ function(input, output, session) {
       # this happens when user changes fuelbed 1/2 tabs within Herbs2
       message("User selected tab: ", input$Herbs2_tabs)
       loadPolygonsForFuelbed(input$Herbs2_tabs)
+      loadRasterForFuelbed(input$Herbs2_tabs)
       if(input$Herbs2_tabs == 'herb2_1fuelbedList'){
         if(!is.null(rv$herbs2_1_xml)) {
           species_nodes <- xml2::xml_find_all(rv$herbs2_1_xml, ".//species_description")
@@ -713,7 +941,7 @@ function(input, output, session) {
     }
 
     loadFuelbedData <- function(fuelbed_id, session, rv, config) {
-      if (fuelbed_id == "" || is.null(fuelbed_id)) {
+      if (fuelbed_id == -1 || fuelbed_id == "" || is.null(fuelbed_id)) {
         return(NULL)
       }
 
@@ -741,38 +969,292 @@ function(input, output, session) {
         return(NULL)
       }
 
-      species_nodes <- xml2::xml_find_all(layer_node, ".//species_description")
+      species_nodes <- NULL
 
       # Store in reactive values
       rv[[config$rv_storage]] <- layer_node
 
-      # Update percent cover
-      percent_cover_node <- xml2::xml_find_first(layer_node, ".//percent_cover")
-      if (! is.na(percent_cover_node)) {
-        percent_cover <- as.numeric(xml2::xml_text(percent_cover_node))
-        updateNumericInput(session, config$pct_input, value = percent_cover)
-      }
+      # do the following for Shrubs and Herbs
+      if(config$understory_type %in% c("Shrubs1", "Shrubs2", "Herbs1", "Herbs2")) {
+        species_nodes <- xml2::xml_find_all(layer_node, ".//species_description")
+        # Update percent cover
+        percent_cover_node <- xml2::xml_find_first(layer_node, ".//percent_cover")
+        if (! is.na(percent_cover_node)) {
+          percent_cover <- as.numeric(xml2::xml_text(percent_cover_node))
+          updateNumericInput(session, config$pct_input, value = percent_cover)
+        }
 
-      # Update percent live
-      percent_live_node <- xml2::xml_find_first(layer_node, ".//percent_live")
-      if (!is.na(percent_live_node)) {
-        percent_live <- as.numeric(xml2:: xml_text(percent_live_node))
-        updateNumericInput(session, config$live_input, value = percent_live)
-      }
+        # Update percent live
+        percent_live_node <- xml2::xml_find_first(layer_node, ".//percent_live")
+        if (!is.na(percent_live_node)) {
+          percent_live <- as.numeric(xml2:: xml_text(percent_live_node))
+          updateNumericInput(session, config$live_input, value = percent_live)
+        }
 
-      # Update height
-      height_node <- xml2::xml_find_first(layer_node, ".//height")
-      if (!is.na(height_node)) {
-        height <- as.numeric(xml2:: xml_text(height_node))
-        updateNumericInput(session, config$height_input, value = height)
-      }
+        # Update height
+        height_node <- xml2::xml_find_first(layer_node, ".//height")
+        if (!is.na(height_node)) {
+          height <- as.numeric(xml2:: xml_text(height_node))
+          updateNumericInput(session, config$height_input, value = height)
+        }
 
-      # Update loading if present (optional field)
-      if (! is.null(config$loading_input)) {
-        loading_node <- xml2::xml_find_first(layer_node, ".//loading")
+        # Update loading if present (optional field)
+        if (! is.null(config$loading_input)) {
+          loading_node <- xml2::xml_find_first(layer_node, ".//loading")
+          if (!is.na(loading_node)) {
+            loading <- as.numeric(xml2::xml_text(loading_node))
+            updateNumericInput(session, config$loading_input, value = loading)
+          }
+        }
+      }
+      else if(config$understory_type == "Downed Wood: fine wood") {
+        species_nodes <- xml2::xml_find_all(layer_node, ".//sound_wood/all_sound_wood/species//species_description")
+        # Update percent
+        percent_node <- xml2::xml_find_first(layer_node, ".//all_downed_woody_fuel/total_percent_cover")
+        if (! is.na(percent_node)) {
+          percent_all <- as.numeric(xml2::xml_text(percent_node))
+          updateNumericInput(session, config$pct_input, value = percent_all)
+        }
+
+        # Update depth
+        depth_node <- xml2::xml_find_first(layer_node, ".//all_downed_woody_fuel/depth")
+        if (! is.na(depth_node)) {
+          depth <- as.numeric(xml2::xml_text(depth_node))
+          # convert inches to cm
+          depth <- depth * INCHES_TO_CM
+          updateNumericInput(session, config$depth_input, value = depth)
+        }
+
+        # Update 1hr loading
+        one_hour_node <- xml2::xml_find_first(layer_node, ".//sound_wood/loadings_zero_to_three_inches/zero_to_quarter_inch")
+        if (!is.na(one_hour_node)) {
+          one_hour <- as.numeric(xml2::xml_text(one_hour_node))
+          #convert to kg/m2 from tons/acre
+          one_hour <- one_hour * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$one_hour_load_input, value = one_hour)
+        }
+        # Update 10hr loading
+        ten_hour_node <- xml2::xml_find_first(layer_node, ".//sound_wood/loadings_zero_to_three_inches/quarter_inch_to_one_inch")
+        if (!is.na(ten_hour_node)) {
+          ten_hour <- as.numeric(xml2::xml_text(ten_hour_node))
+          ten_hour <- ten_hour * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$ten_hour_load_input, value = ten_hour)
+        }
+        # Update 100hr loading
+        hundred_hour_node <- xml2::xml_find_first(layer_node, ".//sound_wood/loadings_zero_to_three_inches/one_to_three_inches")
+        if (!is.na(hundred_hour_node)) {
+          hundred_hour <- as.numeric(xml2::xml_text(hundred_hour_node))
+          hundred_hour <- hundred_hour * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$hundred_hour_load_input, value = hundred_hour)
+        }
+      }
+      else if(config$understory_type == "Downed Wood: coarse wood") {
+        # use sound wood species... since we have choice of sound/rotten.
+        species_nodes <- xml2::xml_find_all(layer_node, ".//sound_wood/all_sound_wood/species//species_description")
+        # Update percent
+        percent_node <- xml2::xml_find_first(layer_node, ".//all_downed_woody_fuel/total_percent_cover")
+        if (! is.na(percent_node)) {
+          percent_all <- as.numeric(xml2::xml_text(percent_node))
+          updateNumericInput(session, config$pct_input, value = percent_all)
+        }
+
+        # Update depth
+        depth_node <- xml2::xml_find_first(layer_node, ".//all_downed_woody_fuel/depth")
+        if (!is.na(depth_node)) {
+          depth <- as.numeric(xml2::xml_text(depth_node))
+          # convert inches to cm
+          depth <- depth * INCHES_TO_CM
+          updateNumericInput(session, config$depth_input, value = depth)
+        }
+
+        # Update 1000hr loading (sound)
+        thousand_hour_node <- xml2::xml_find_first(layer_node, ".//loadings_greater_than_three_inches/three_to_nine_inches")
+        if (!is.na(thousand_hour_node)) {
+          thousand_hour <- as.numeric(xml2::xml_text(thousand_hour_node))
+          #convert to kg/m2 from tons/acre
+          thousand_hour <- thousand_hour * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$one_thousand_hour_sound_input, value = thousand_hour)
+        }
+        # update 10000hr loading (sound)
+        ten_thousand_hour_node <- xml2::xml_find_first(layer_node, ".//loadings_greater_than_three_inches/nine_to_twenty_inches")
+        if (!is.na(ten_thousand_hour_node)) {
+          ten_thousand_hour <- as.numeric(xml2::xml_text(ten_thousand_hour_node))
+          ten_thousand_hour <- ten_thousand_hour * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$ten_thousand_hour_sound_input, value = ten_thousand_hour)
+        }
+        # update >10000hr loading (sound)
+        gt_ten_thousand_hour_node <- xml2::xml_find_first(layer_node, ".//loadings_greater_than_three_inches/greater_than_twenty_inches")
+        if (!is.na(gt_ten_thousand_hour_node)) {
+          gt_ten_thousand_hour <- as.numeric(xml2::xml_text(gt_ten_thousand_hour_node))
+          gt_ten_thousand_hour <- gt_ten_thousand_hour * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$gt_ten_thousand_hour_sound_input, value = gt_ten_thousand_hour)
+        }
+        # Update 1000hr loading (rotten)
+        thousand_hour_rotten_node <- xml2::xml_find_first(layer_node, ".//rotten_wood/loadings_greater_than_three_inches/three_to_nine_inches")
+        if (!is.na(thousand_hour_rotten_node)) {
+          thousand_hour_rotten <- as.numeric(xml2::xml_text(thousand_hour_rotten_node))
+          #convert to kg/m2 from tons/acre
+          thousand_hour_rotten <- thousand_hour_rotten * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$one_thousand_hour_rotten_input, value = thousand_hour_rotten)
+        }
+        # update 10000hr loading (rotten)
+        ten_thousand_hour_rotten_node <- xml2::xml_find_first(layer_node, ".//rotten_wood/loadings_greater_than_three_inches/nine_to_twenty_inches")
+        if (!is.na(ten_thousand_hour_rotten_node)) {
+          ten_thousand_hour_rotten <- as.numeric(xml2::xml_text(ten_thousand_hour_rotten_node))
+          ten_thousand_hour_rotten <- ten_thousand_hour_rotten * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$ten_thousand_hour_rotten_input, value = ten_thousand_hour_rotten)
+        }
+        # update >10000hr loading (rotten)
+        gt_ten_thousand_hour_rotten_node <- xml2::xml_find_first(layer_node, ".//rotten_wood/loadings_greater_than_three_inches/greater_than_twenty_inches")
+        if (!is.na(gt_ten_thousand_hour_rotten_node)) {
+          gt_ten_thousand_hour_rotten <- as.numeric(xml2::xml_text(gt_ten_thousand_hour_rotten_node))
+          gt_ten_thousand_hour_rotten <- gt_ten_thousand_hour_rotten * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$gt_ten_thousand_hour_rotten_input, value = gt_ten_thousand_hour_rotten)
+        }
+      }
+      else if(config$understory_type == "Litter Lichen Moss") {
+        # Update percent
+        percent_node <- xml2::xml_find_first(layer_node, ".//litter/percent_cover")
+        if (! is.na(percent_node)) {
+          percent_all <- as.numeric(xml2::xml_text(percent_node))
+          updateNumericInput(session, config$pct_input, value = percent_all)
+        }
+        # Update depth
+        depth_node <- xml2::xml_find_first(layer_node, ".//litter/depth")
+        if (!is.na(depth_node)) {
+          depth <- as.numeric(xml2::xml_text(depth_node))
+          # convert inches to cm
+          depth <- depth * INCHES_TO_CM
+          updateNumericInput(session, config$depth_input, value = depth)
+        }
+        # Update loading (optional field in fuelbed)
+        loading_node <- xml2::xml_find_first(layer_node, ".//litter/loading")
         if (!is.na(loading_node)) {
           loading <- as.numeric(xml2::xml_text(loading_node))
+          #convert to kg/m2 from tons/acre
+          loading <- loading * TONS_PER_ACRE_TO_KG_PER_M2
           updateNumericInput(session, config$loading_input, value = loading)
+        }
+        # Update arrangement
+        arrangement_node <- xml2::xml_find_first(layer_node, ".//litter/arrangement")
+        if (!is.na(arrangement_node)) {
+          arrangement <- xml2::xml_text(arrangement_node)
+          switch(arrangement,
+                 "1" = {
+                   arrangement <- "Normal"
+                 },
+                 "2" = {
+                   arrangement <- "Freshly Fallen"
+                 },
+                 "3" = {
+                   arrangement <- "Suspended"
+                 }, {
+            arrangement <- "Normal"
+          })
+          updateRadioButtons(session, config$arrangement_input, selected = arrangement)
+        }
+        # update snp
+        snp_node <- xml2::xml_find_first(layer_node, ".//short_needle_pine/relative_cover")
+        if (!is.na(snp_node)) {
+          snp <- as.numeric(xml2::xml_text(snp_node))
+          updateNumericInput(session, config$snp_input, value = snp)
+        }
+        # update lnp
+        lnp_node <- xml2::xml_find_first(layer_node, ".//long_needle_pine/relative_cover")
+        if (!is.na(lnp_node)) {
+          lnp <- as.numeric(xml2::xml_text(lnp_node))
+          updateNumericInput(session, config$lnp_input, value = lnp)
+        }
+        # update oc
+        oc_node <- xml2::xml_find_first(layer_node, ".//other_conifer/relative_cover")
+        if (!is.na(oc_node)) {
+          oc <- as.numeric(xml2::xml_text(oc_node))
+          updateNumericInput(session, config$oc_input, value = oc)
+        }
+        # update bd
+        bd_node <- xml2::xml_find_first(layer_node, ".//broadleaf_deciduous/relative_cover")
+        if (!is.na(bd_node)) {
+          bd <- as.numeric(xml2::xml_text(bd_node))
+          updateNumericInput(session, config$bd_input, value = bd)
+        }
+        # update be
+        be_node <- xml2::xml_find_first(layer_node, ".//broadleaf_evergreen/relative_cover")
+        if (!is.na(be_node)) {
+          be <- as.numeric(xml2::xml_text(be_node))
+          updateNumericInput(session, config$be_input, value = be)
+        }
+        # update pf
+        pf_node <- xml2::xml_find_first(layer_node, ".//palm_frond/relative_cover")
+        if (!is.na(pf_node)) {
+          pf <- as.numeric(xml2::xml_text(pf_node))
+          updateNumericInput(session, config$pf_input, value = pf)
+        }
+        # update grass
+        grass_node <- xml2::xml_find_first(layer_node, ".//grass/relative_cover")
+        if (!is.na(grass_node)) {
+          grass <- as.numeric(xml2::xml_text(grass_node))
+          updateNumericInput(session, config$grass_input, value = grass)
+        }
+      }
+      else if(config$understory_type == "Ground Fuels") {
+        # Update upper percent
+        upper_percent_node <- xml2::xml_find_first(layer_node, ".//duff/upper/percent_cover")
+        if (! is.na(upper_percent_node)) {
+          upper_percent <- as.numeric(xml2::xml_text(upper_percent_node))
+          updateNumericInput(session, config$upper_pct_input, value = upper_percent)
+        }
+        # Update upper depth
+        upper_depth_node <- xml2::xml_find_first(layer_node, ".//duff/upper/depth")
+        if (!is.na(upper_depth_node)) {
+          upper_depth <- as.numeric(xml2::xml_text(upper_depth_node))
+          # convert inches to cm
+          upper_depth <- upper_depth * INCHES_TO_CM
+          updateNumericInput(session, config$upper_depth_input, value = upper_depth)
+        }
+        # Update upper loading (optional field in fuelbed)
+        upper_loading_node <- xml2::xml_find_first(layer_node, ".//duff/upper/loading")
+        if (!is.na(upper_loading_node)) {
+          upper_loading <- as.numeric(xml2::xml_text(upper_loading_node))
+          #convert to kg/m2 from tons/acre
+          upper_loading <- upper_loading * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$upper_loading_input, value = upper_loading)
+        }
+        # Update lower percent
+        lower_percent_node <- xml2::xml_find_first(layer_node, ".//duff/lower/percent_cover")
+        if (! is.na(lower_percent_node)) {
+          lower_percent <- as.numeric(xml2::xml_text(lower_percent_node))
+          updateNumericInput(session, config$lower_pct_input, value = lower_percent)
+        }
+        # Update lower depth
+        lower_depth_node <- xml2::xml_find_first(layer_node, ".//duff/lower/depth")
+        if (!is.na(lower_depth_node)) {
+          lower_depth <- as.numeric(xml2::xml_text(lower_depth_node))
+          # convert inches to cm
+          lower_depth <- lower_depth * INCHES_TO_CM
+          updateNumericInput(session, config$lower_depth_input, value = lower_depth)
+        }
+        # Update lower loading (optional field in fuelbed)
+        lower_loading_node <- xml2::xml_find_first(layer_node, ".//duff/lower/loading")
+        if (!is.na(lower_loading_node)) {
+          lower_loading <- as.numeric(xml2::xml_text(lower_loading_node))
+          #convert to kg/m2 from tons/acre
+          lower_loading <- lower_loading * TONS_PER_ACRE_TO_KG_PER_M2
+          updateNumericInput(session, config$lower_loading_input, value = lower_loading)
+        }
+        # Update derivation
+        derivation_node <- xml2::xml_find_first(layer_node, ".//duff/upper/derivation")
+        if (!is.na(derivation_node)) {
+          derivation <- xml2::xml_text(derivation_node)
+          switch(derivation,
+                 "1" = {
+                   derivation <- "Other"
+                 },
+                 "2" = {
+                   derivation <- "Sphagnum"
+                 }, {
+            derivation <- "Other"
+          })
+          updateRadioButtons(session, config$derivation_input, selected = derivation)
         }
       }
 
@@ -786,6 +1268,7 @@ function(input, output, session) {
       config <- FUELBED_CONFIGS[[strata_name]]
 
       observeEvent(input[[config$input_id]], {
+        print("Fuelbed select observer called.")
         species_nodes <- loadFuelbedData(
           input[[config$input_id]],
           session,
@@ -820,6 +1303,16 @@ function(input, output, session) {
             input[[config$tab_id]] == config$tab_value) {
           createSpeciesUI(species_nodes, config$species_div, NULL)
         }
+
+        if(input[[config$input_id]] == "-1") {
+          # Show All Fuelbeds selected, so remove fuelbed layer
+          proxy <- leafletProxy("subMap")
+          proxy %>% clearGroup("fuelbed_layer")
+          return(NULL)
+        }
+
+        removePolygonsForFuelbed(config$input_id)
+        loadRasterForFuelbed(config$input_id)
       })
     })
 
@@ -1515,54 +2008,6 @@ function(input, output, session) {
       return(bounding_rect_polygon)
     }
 
-    getSuggestedFuelbeds <- function() {
-      # get the bounding box of rv$polygon
-      sf_object <- geojsonsf::geojson_sf(rv$polygon)
-      bbox <- st_bbox(sf_object)
-      # call the rlandfire api to get suggested fuelbeds
-      url <- paste0("https://landfire.gov/arcgis/rest/services/IFTDSS/IFTDSS_Suggested_Fuelbeds/MapServer/identify?f=json&geometry={\"xmin\":", bbox["xmin"], ",\"ymin\":", bbox["ymin"], ",\"xmax\":", bbox["xmax"], ",\"ymax\":", bbox["ymax"], ",\"spatialReference\":{\"wkid\":4326}}&geometryType=esriGeometryEnvelope&sr=4326&tolerance=3&mapExtent={\"xmin\":", bbox["xmin"], ",\"ymin\":", bbox["ymin"], ",\"xmax\":", bbox["xmax"], ",\"ymax\":", bbox["ymax"], ",\"spatialReference\":{\"wkid\":4326}}&imageDisplay=800,600,96&returnGeometry=false&layerIds=&layerOption=all&time=&dynamicLayers=&gdbVersion=&returnZ=false&returnM=false&returnUnformattedValues=false&returnFieldName=false")
-      response <- GET(url)
-      contentResponse = content(response, "parsed")
-      # extract the fuelbed names from contentResponse
-      fuelbed_names <- c()
-      for (feature in contentResponse$results) {
-        fuelbed_name <- feature$attributes$FUELBED_NAME
-        fuelbed_names <- c(fuelbed_names, fuelbed_name)
-      }
-      # return unique fuelbed names
-      return(unique(fuelbed_names))
-    }
-
-
-    getSuggestedFuelbeds2_AI <- function(sf_object) {
-      # Convert AOI to bounding box
-      myAOI <- sf::st_bbox(sf_object) %>% as.numeric()
-
-      save_file <- tempfile(fileext = ".zip")
-
-      # Correct product name for FCCS fuelbeds
-      resp <- landfireAPIv2(
-        products = "FCCS2020",
-        aoi = myAOI,
-        email = "bdrye@uw.edu",
-        path = save_file
-      )
-
-      lf_dir <- file.path(tempdir(), "lf")
-      utils::unzip(save_file, exdir = lf_dir)
-
-      print(list.files(lf_dir, full.names = TRUE, recursive = TRUE))
-
-      lf <- terra::rast(list.files(lf_dir, pattern = ".tif$",
-                                   full.names = TRUE,
-                                   recursive = TRUE))
-
-      print(lf)
-    }
-
-
-
-
     getSuggestedFuelbeds2 <- function(sf_object) {
 
       #return(c("Fuelbed 52", "Fuelbed 53"))
@@ -1727,6 +2172,20 @@ function(input, output, session) {
       # unique_vals <- sort(unique(vals))
       # pal <- colorFactor(viridis(length(unique_vals)), domain = unique_vals, na.color = "transparent")
 
+      # get a polygon that outlines rv$enclosing_raster
+      r_ext <- terra::ext(rv$enclosing_raster)
+      rect_coords <- matrix(c(r_ext[1], r_ext[3],
+                              r_ext[1], r_ext[4],
+                              r_ext[2], r_ext[4],
+                              r_ext[2], r_ext[3],
+                              r_ext[1], r_ext[3]),
+                            ncol = 2, byrow = TRUE)
+      raster_outline_polygon <- st_polygon(list(rect_coords))
+      raster_outline_polygon <- st_sfc(raster_outline_polygon, crs = crs(rv$enclosing_raster))
+
+      # TRANSFORM TO WGS84 for Leaflet
+      raster_outline_polygon_wgs84 <- st_transform(raster_outline_polygon, crs = 4326)
+
       # 4) add to leaflet and zoom to extent
       e <- terra::ext(masked_ll)   # xmin, xmax, ymin, ymax (terra)
       proxy <- leafletProxy("subMap")
@@ -1734,8 +2193,8 @@ function(input, output, session) {
 #        addTiles() %>%
         removeControl(layerId="fuelbedLegend") %>%
 #        addRasterImage(r_raster, colors = pal, opacity = 0.9) %>%   # use this to show masked raster (just polygon area)
-        addRasterImage(rv$enclosing_raster, colors = pal, opacity = 0.9) %>%
-        addPolygons(data = sf_object, fill = FALSE, color = mainPolygonColor, weight = 3, opacity = 0.9) %>%
+        addRasterImage(rv$enclosing_raster, colors = pal, opacity = 1, layerId="fullRaster", group="fullRaster") %>%
+        addPolygons(data = sf_object, fill = FALSE, color = mainPolygonColor, weight = 3, opacity = .9) %>%
         addLegend("topright", pal = pal, values = unique_vals, opacity="1", title = "Fuelbed", layerId="fuelbedLegend") %>%
         fitBounds(e[1], e[3], e[2], e[4])
 
