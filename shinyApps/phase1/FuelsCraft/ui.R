@@ -30,6 +30,7 @@ library(viridis)
 library(htmlwidgets)
 library(ggplot2)
 library(DT)
+library(dplyr)
 
 
 # Define UI for application that draws a histogram
@@ -126,7 +127,7 @@ fluidPage(
         actionButton("loadCustomFile", "Load", disabled=FALSE),
         actionButton("cropCustomPolygon", "Crop", disabled=FALSE),
         h4("FastFuels API"),
-        textInput("api_key", "API Key", value = "6e25655e09a14eb7a85489da28c038d0"),   # key created 5/20/2025 BrianTest
+        textInput("api_key", "API Key", value = "88558dfdb7414c73803fca08edb0119e"),   # key created 2/16/2026
         actionButton("createDomain", "Create Domain", disabled=TRUE),
         textInput("domainId", "Domain ID", value=""),
         actionButton("createRoadFeature", "Create Road Feature", disabled=TRUE),
@@ -418,10 +419,10 @@ fluidPage(
                                     selectInput("downedCoarse_1fuelbedList", label=NULL, choices=NULL),
                                     sliderInput("downedCoarseSound_1fuelbed1000hrLoad", "Sound 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     sliderInput("downedCoarseSound_1fuelbed10000hrLoad", "Sound 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
-                                    sliderInput("downedCoarseSound_1fuelbed10000+hrLoad", "Sound >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseSound_1fuelbed10000plusHrLoad", "Sound >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     sliderInput("downedCoarseRotten_1fuelbed1000hrLoad", "Rotten 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     sliderInput("downedCoarseRotten_1fuelbed10000hrLoad", "Rotten 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
-                                    sliderInput("downedCoarseRotten_1fuelbed10000+hrLoad", "Rotten >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_1fuelbed10000plusHrLoad", "Rotten >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     tags$div(id = "downedCoarse_1_species_div")
                                   )
                          ),
@@ -432,10 +433,10 @@ fluidPage(
                                     selectInput("downedCoarse_2fuelbedList", label=NULL, choices=NULL),
                                     sliderInput("downedCoarseSound_2fuelbed1000hrLoad", "Sound 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     sliderInput("downedCoarseSound_2fuelbed10000hrLoad", "Sound 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
-                                    sliderInput("downedCoarseSound_2fuelbed10000+hrLoad", "Sound >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseSound_2fuelbed10000plusHrLoad", "Sound >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     sliderInput("downedCoarseRotten_2fuelbed1000hrLoad", "Rotten 1000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     sliderInput("downedCoarseRotten_2fuelbed10000hrLoad", "Rotten 10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
-                                    sliderInput("downedCoarseRotten_2fuelbed10000+hrLoad", "Rotten >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
+                                    sliderInput("downedCoarseRotten_2fuelbed10000plusHrLoad", "Rotten >10,000hr load (kg/m2)",  min = 0, max = 20, value=0, step=0.1),
                                     tags$div(id = "downedCoarse_2_species_div")
                                   )
                          )
@@ -597,7 +598,7 @@ fluidPage(
                      conditionalPanel(
                        condition = "input.understory == 'Ground Fuels'",
                        tabsetPanel(
-                         id="groundFuel_tabs",
+                         id="Ground_tabs",
                          tabPanel("Fuelbed 1",
                            value="ground_1fuelbedList",
                              wellPanel(

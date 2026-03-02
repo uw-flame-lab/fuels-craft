@@ -159,10 +159,10 @@ FUELBED_CONFIGS <- list(
     depth_input = "downedCoarse_1depth",
     one_thousand_hour_sound_input = "downedCoarseSound_1fuelbed1000hrLoad",
     ten_thousand_hour_sound_input = "downedCoarseSound_1fuelbed10000hrLoad",
-    gt_ten_thousand_hour_sound_input = "downedCoarseSound_1fuelbed10000+hrLoad",
+    gt_ten_thousand_hour_sound_input = "downedCoarseSound_1fuelbed10000plusHrLoad",
     one_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed1000hrLoad",
     ten_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed10000hrLoad",
-    gt_ten_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed10000+hrLoad",
+    gt_ten_thousand_hour_rotten_input = "downedCoarseRotten_1fuelbed10000plusHrLoad",
     species_div = "downedCoarse_1_species_div",
     understory_type = "Downed Wood: coarse wood",
     tab_id = "DownedCoarse_tabs",
@@ -176,10 +176,10 @@ FUELBED_CONFIGS <- list(
     depth_input = "downedCoarse_2depth",
     one_thousand_hour_sound_input = "downedCoarseSound_2fuelbed1000hrLoad",
     ten_thousand_hour_sound_input = "downedCoarseSound_2fuelbed10000hrLoad",
-    gt_ten_thousand_hour_sound_input = "downedCoarseSound_2fuelbed10000+hrLoad",
+    gt_ten_thousand_hour_sound_input = "downedCoarseSound_2fuelbed10000plusHrLoad",
     one_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed1000hrLoad",
     ten_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed10000hrLoad",
-    gt_ten_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed10000+hrLoad",
+    gt_ten_thousand_hour_rotten_input = "downedCoarseRotten_2fuelbed10000plusHrLoad",
     species_div = "downedCoarse_2_species_div",
     understory_type = "Downed Wood: coarse wood",
     tab_id = "DownedCoarse_tabs",
@@ -201,7 +201,7 @@ FUELBED_CONFIGS <- list(
     pf_input = "llm_1pf",
     grass_input = "llm_1grass",
 #    species_div = "llm_1_species_div",
-    understory_type = "Litter Lichen Moss",
+    understory_type = "Litter, Lichen, Moss",
     tab_id = "LLM_tabs",
     tab_value = "llm_1fuelbedList"
   ),
@@ -310,8 +310,17 @@ function(input, output, session) {
     rv$herb2_1_species_div_df <- NULL
     rv$herb2_2_species_div_df <- NULL
 
+    rv$downedFine1_xml <- NULL
+    rv$downedFine2_xml <- NULL
 
+    rv$downedFine_1_species_div_df <- NULL
+    rv$downedFine_2_species_div_df <- NULL
 
+    rv$downedCoarse_1_xml <- NULL
+    rv$downedCoarse_2_xml <- NULL
+
+    rv$downedCoarse_1_species_div_df <- NULL
+    rv$downedCoarse_2_species_div_df <- NULL
 
     mainPolygonColor = "#33ffff"
 
@@ -341,15 +350,15 @@ function(input, output, session) {
 
     # Query helper: get all polygons for a strata and fuelbed
     get_fuelbed_sf <- function(tbl, strata, fuelbed = 1) {
-      filter(tbl, strata == !!strata, fuelbed == !!as.integer(fuelbed))
+      dplyr::filter(tbl, strata == !!strata, fuelbed == !!as.integer(fuelbed))
     }
 
 
     drawEmptyMap <- function(editButton = FALSE, removeButton = FALSE) {
       map <- leaflet() %>%
         addProviderTiles("Esri.WorldImagery") %>%
-        setView(-120.15, 48.42, zoom = 12) %>%   # Winthrop
-#        setView(-81.73, 32.06, zoom = 12) %>%    # Fort Stewart
+#        setView(-120.15, 48.42, zoom = 12) %>%   # Winthrop
+        setView(-81.73, 32.06, zoom = 12) %>%    # Fort Stewart
 #        setView(-81.708, 31.896, zoom = 12) %>%    # Fort Stewart
         # attach JS that finds map2 and syncs both ways
         htmlwidgets::onRender("
@@ -439,10 +448,19 @@ function(input, output, session) {
 
       # add to rv$understory_sf. Get strata from input$understory selectInput
       strata <- input$understory
-      # get the selected fuelbed tab panel, then get the fuelbedList selectInput value
-      fuelbedSelectId <- input[[paste0(strata, "_tabs")]]
-      fuelbed <- input[[fuelbedSelectId]]
 
+      # get the fuelbedSelectId from the FUELBED_CONFIGS, where understory_type = strata
+      # this doesn't work... need to get the selected tab for the strata, then get the fuelbedSelectId from that
+      fuelbedSelectId <- NULL
+      tab_id <- NULL
+      for (config in FUELBED_CONFIGS) {
+        if (config$understory_type == strata) {
+          tab_id <- config$tab_id
+          break
+        }
+      }
+      fuelbedSelectId <- input[[tab_id]]
+      fuelbed <- input[[fuelbedSelectId]]
       rv$understory_sf <- add_polygon_row(rv$understory_sf, strata, fuelbedSelectId, fuelbed, sf_row, polygonId)
     })
 
@@ -535,6 +553,11 @@ function(input, output, session) {
         outputString <- paste0("area: ",area, " (ok, less than 16 km^2)")
         output$area <- renderPrint({outputString})
         updateActionButton(session, "createDomain", disabled = FALSE)
+
+        # if Understory tab is selected, get suggested fuelbeds and populate fuelbedList selectInputs
+
+
+
         # get list of suggested fuelbeds from rlandfire and populate fuelbedList
         suggested_fuelbeds <- getSuggestedFuelbeds2(sf_object)
 
@@ -580,11 +603,11 @@ function(input, output, session) {
       print(nrow(species_ivDB))
       subsetRows <- NULL
       if(input$understory == "Shrubs1" || input$understory == "Shrubs2") {
-        subsetRows <- species_ivDB %>% filter(shrub == 1)
+        subsetRows <- species_ivDB %>% dplyr::filter(shrub == 1)
       } else if(input$understory == "Herbs1" || input$understory == "Herbs2") {
-        subsetRows <- species_ivDB %>% filter(nonwoody == 1)
+        subsetRows <- species_ivDB %>% dplyr::filter(nonwoody == 1)
       } else if(input$understory == "Downed Wood: fine wood" || input$understory == "Downed Wood: coarse wood") {
-        subsetRows <- species_ivDB %>% filter(woody == 1)
+        subsetRows <- species_ivDB %>% dplyr::filter(woody == 1)
       } else {
         subsetRows <- species_ivDB
       }
@@ -657,6 +680,56 @@ function(input, output, session) {
         loadPolygonsForFuelbed(input$Herbs2_tabs)
         loadRasterForFuelbed(input$Herbs2_tabs)
       }
+      # todo: add rest of strata here
+      if(input$understory == "Downed Wood: fine wood" && input$DownedFine_tabs == "downedFine_1fuelbedList"){
+        if(!is.null(rv$downedFine1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedFine1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedFine_1_species_div", rv$downedFine_1_species_div_df)
+        }
+        loadPolygonsForFuelbed(input$DownedFine_tabs)
+        loadRasterForFuelbed(input$DownedFine_tabs)
+      }
+      if(input$understory == "Downed Wood: fine wood" && input$DownedFine_tabs == "downedFine_2fuelbedList"){
+        if(!is.null(rv$downedFine2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedFine2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedFine_2_species_div", rv$downedFine_2_species_div_df)
+        }
+        loadPolygonsForFuelbed(input$DownedFine_tabs)
+        loadRasterForFuelbed(input$DownedFine_tabs)
+      }
+      if(input$understory == "Downed Wood: coarse wood" && input$DownedCoarse_tabs == "downedCoarse_1fuelbedList"){
+        if(!is.null(rv$downedCoarse_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedCoarse_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedCoarse_1_species_div", rv$downedCoarse_1_species_div_df)
+        }
+        loadPolygonsForFuelbed(input$DownedCoarse_tabs)
+        loadRasterForFuelbed(input$DownedCoarse_tabs)
+      }
+      if(input$understory == "Downed Wood: coarse wood" && input$DownedCoarse_tabs == "downedCoarse_2fuelbedList"){
+        if(!is.null(rv$downedCoarse_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedCoarse_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedCoarse_2_species_div", rv$downedCoarse_2_species_div_df)
+        }
+        loadPolygonsForFuelbed(input$DownedCoarse_tabs)
+        loadRasterForFuelbed(input$DownedCoarse_tabs)
+      }
+      if(input$understory == "Litter, Lichen, Moss" && input$LLM_tabs == "llm_1fuelbedList"){
+        loadPolygonsForFuelbed(input$LLM_tabs)
+        loadRasterForFuelbed(input$LLM_tabs)
+      }
+      if(input$understory == "Litter, Lichen, Moss" && input$LLM_tabs == "llm_2fuelbedList"){
+        loadPolygonsForFuelbed(input$LLM_tabs)
+        loadRasterForFuelbed(input$LLM_tabs)
+      }
+      if(input$understory == "Ground Fuels" && input$Ground_tabs == "ground_1fuelbedList"){
+        loadPolygonsForFuelbed(input$Ground_tabs)
+        loadRasterForFuelbed(input$Ground_tabs)
+      }
+      if(input$understory == "Ground Fuels" && input$Ground_tabs == "ground_2fuelbedList"){
+        loadPolygonsForFuelbed(input$Ground_tabs)
+        loadRasterForFuelbed(input$Ground_tabs)
+      }
+
     })
 
     loadRasterForFuelbed <- function(selectedFuelbedTab)
@@ -726,7 +799,7 @@ function(input, output, session) {
       proxy %>% clearGroup("understory_polygons")
 
       # remove polygons from rv$understory_sf that have fuelbedTab == selectedFuelbedTab
-      rv$understory_sf <- rv$understory_sf %>% filter(fuelbedTab != selectedFuelbedTab)
+      rv$understory_sf <- rv$understory_sf %>% dplyr::filter(fuelbedTab != selectedFuelbedTab)
     }
 
     loadPolygonsForFuelbed <- function(selectedFuelbedTab) {
@@ -737,7 +810,7 @@ function(input, output, session) {
       proxy %>% clearGroup("understory_polygons")
 
       # get polygons from rv$understory that have fuelbedTab == selectedFuelbedTab
-      fb_polygons <- rv$understory_sf %>% filter(fuelbedTab == selectedFuelbedTab)
+      fb_polygons <- rv$understory_sf %>% dplyr::filter(fuelbedTab == selectedFuelbedTab)
       if(nrow(fb_polygons) == 0) {
         return(NULL)
       }
@@ -835,6 +908,58 @@ function(input, output, session) {
       }
     })
 
+    observeEvent(input$DownedFine_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Downed Fine
+      message("User selected tab: ", input$DownedFine_tabs)
+      loadPolygonsForFuelbed(input$DownedFine_tabs)
+      loadRasterForFuelbed(input$DownedFine_tabs)
+      if(input$DownedFine_tabs == 'downedFine_1fuelbedList'){
+        if(!is.null(rv$downedFine1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedFine1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedFine_1_species_div", rv$downedFine_1_species_div_df)
+        }
+      }
+      if(input$DownedFine_tabs == 'downedFine_2fuelbedList'){
+        if(!is.null(rv$downedFine2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedFine2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedFine_2_species_div", rv$downedFine_2_species_div_df)
+        }
+      }
+    })
+
+    observeEvent(input$DownedCoarse_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Downed Coarse
+      message("User selected tab: ", input$DownedCoarse_tabs)
+      loadPolygonsForFuelbed(input$DownedCoarse_tabs)
+      loadRasterForFuelbed(input$DownedCoarse_tabs)
+      if(input$DownedCoarse_tabs == 'downedCoarse_1fuelbedList'){
+        if(!is.null(rv$downedCoarse_1_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedCoarse_1_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedCoarse_1_species_div", rv$downedCoarse_1_species_div_df)
+        }
+      }
+      if(input$DownedCoarse_tabs == 'downedCoarse_2fuelbedList'){
+        if(!is.null(rv$downedCoarse_2_xml)) {
+          species_nodes <- xml2::xml_find_all(rv$downedCoarse_2_xml, ".//species_description")
+          createSpeciesUI(species_nodes, "downedCoarse_2_species_div", rv$downedCoarse_2_species_div_df)
+        }
+      }
+    })
+
+    observeEvent(input$LLM_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within LLM
+      message("User selected tab: ", input$LLM_tabs)
+      loadPolygonsForFuelbed(input$LLM_tabs)
+      loadRasterForFuelbed(input$LLM_tabs)
+    })
+
+    observeEvent(input$Ground_tabs, {
+      # this happens when user changes fuelbed 1/2 tabs within Ground
+      message("User selected tab: ", input$Ground_tabs)
+      loadPolygonsForFuelbed(input$Ground_tabs)
+      loadRasterForFuelbed(input$Ground_tabs)
+    })
+
 
     getFuelbedFilename <- function(fbnum) {
       # fuelbed file names...
@@ -852,7 +977,7 @@ function(input, output, session) {
         fbnum <- as.integer(floor(fbnum / 10000) )
       }
 
-      if(fbnum < 291) {
+      if(fbnum <= 291) {
         fb_file_prefix <- "FB_"
         fb_file_suffix <- "_FCCS"
       } else if (fbnum >= 301 && fbnum <= 542) {
@@ -1967,14 +2092,374 @@ function(input, output, session) {
       })
     })
 
+    getSpeciesValue <- function(div_df, column) {
+      if(is.null(div_df)) {
+        return("")
+      }
+      return(div_df[[column]])
+    }
+
 
     observeEvent(input$addUnderstory, {
       print("addUnderstory clicked")
       # look at rv$understory_sf
       print(rv$understory_sf)
+
+      # Create data structure
+      understory_data <- list(
+        Shrub1 = list(
+          fuelbed1 = list(
+            fuelbed = input$shrub1_1fuelbedList,
+            settings = list(
+              percent_cover = input$shrub1_1fuelbedPct,
+              spatial_pattern = input$shrub1_1spatialPattern,
+              percent_live = input$shrub1_1percentLive,
+              height = input$shrub1_1height,
+              loading = input$shrub1_1loading,
+              needle_drape = input$shrub1_1needleDrape,
+              species = getSpeciesValue(rv$shrub1_1_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$shrub1_1_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$shrub1_1_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "shrub1_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$shrub1_2fuelbedList,
+            settings = list(
+              percent_cover = input$shrub1_2fuelbedPct,
+              spatial_pattern = input$shrub1_2spatialPattern,
+              percent_live = input$shrub1_2percentLive,
+              height = input$shrub1_2height,
+              loading = input$shrub1_2loading,
+              needle_drape = input$shrub1_2needleDrape,
+              species = getSpeciesValue(rv$shrub1_2_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$shrub1_2_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$shrub1_2_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "shrub1_2fuelbedList")
+          )
+        ),
+        Shrub2 = list(
+          fuelbed1 = list(
+            fuelbed = input$shrub2_1fuelbedList,
+            settings = list(
+              percent_cover = input$shrub2_1fuelbedPct,
+              spatial_pattern = input$shrub2_1spatialPattern,
+              percent_live = input$shrub2_1percentLive,
+              height = input$shrub2_1height,
+              loading = input$shrub2_1loading,
+              species = getSpeciesValue(rv$shrub2_1_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$shrub2_1_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$shrub2_1_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "shrub2_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$shrub2_2fuelbedList,
+            settings = list(
+              percent_cover = input$shrub2_2fuelbedPct,
+              spatial_pattern = input$shrub2_2spatialPattern,
+              percent_live = input$shrub2_2percentLive,
+              height = input$shrub2_2height,
+              loading = input$shrub2_2loading,
+              species = getSpeciesValue(rv$shrub2_2_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$shrub2_2_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$shrub2_2_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "shrub2_2fuelbedList")
+          )
+        ),
+        Herb1 = list(
+          fuelbed1 = list(
+            fuelbed = input$herb1_1fuelbedList,
+            settings = list(
+              percent_cover = input$herb1_1fuelbedPct,
+              spatial_pattern = input$herb1_1spatialPattern,
+              percent_live = input$herb1_1percentLive,
+              height = input$herb1_1height,
+              loading = input$herb1_1loading,
+              species = rv$herb1_1_species_div_df$species,
+              species_tsn = rv$herb1_1_species_div_df$speciesTSN,
+              species_relative_cover = rv$herb1_1_species_div_df$relative_cover
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "herb1_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$herb1_2fuelbedList,
+            settings = list(
+              percent_cover = input$herb1_2fuelbedPct,
+              spatial_pattern = input$herb1_2spatialPattern,
+              percent_live = input$herb1_2percentLive,
+              height = input$herb1_2height,
+              loading = input$herb1_2loading,
+              species = getSpeciesValue(rv$herb1_2_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$herb1_2_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$herb1_2_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "herb1_2fuelbedList")
+          )
+        ),
+        Herb2 = list(
+          fuelbed1 = list(
+            fuelbed = input$herb2_1fuelbedList,
+            settings = list(
+              percent_cover = input$herb2_1fuelbedPct,
+              spatial_pattern = input$herb2_1spatialPattern,
+              percent_live = input$herb2_1percentLive,
+              height = input$herb2_1height,
+              loading = input$herb2_1loading,
+              species = getSpeciesValue(rv$herb2_1_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$herb2_1_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$herb2_1_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "herb2_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$herb2_2fuelbedList,
+            settings = list(
+              percent_cover = input$herb2_2fuelbedPct,
+              spatial_pattern = input$herb2_2spatialPattern,
+              percent_live = input$herb2_2percentLive,
+              height = input$herb2_2height,
+              loading = input$herb2_2loading,
+              species = getSpeciesValue(rv$herb2_2_species_div_df, "species"),
+              species_tsn = getSpeciesValue(rv$herb2_2_species_div_df, "speciesTSN"),
+              species_relative_cover = getSpeciesValue(rv$herb2_2_species_div_df, "relative_cover")
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "herb2_2fuelbedList")
+          )
+        ),
+        DownWoodFine = list(
+          fuelbed1 = list(
+            fuelbed = input$downwoodFine_fuelbedList,
+            settings = list(
+              spatial_pattern = input$downedFine_1spatialPattern,
+              percent_cover = input$downedFine_1fuelbedPct,
+              depth = input$downedFine_1fuelbedDepth,
+              load_1hr = input$downedFine_1fuelbed1hrLoad,
+              load_10hr = input$downedFine_1fuelbed10hrLoad,
+              load_100hr = input$downedFine_1fuelbed100hrLoad
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "downedFine_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$downwoodFine_2fuelbedList,
+            settings = list(
+              spatial_pattern = input$downedFine_2spatialPattern,
+              percent_cover = input$downedFine_2fuelbedPct,
+              depth = input$downedFine_2fuelbedDepth,
+              load_1hr = input$downedFine_2fuelbed1hrLoad,
+              load_10hr = input$downedFine_2fuelbed10hrLoad,
+              load_100hr = input$downedFine_2fuelbed100hrLoad
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "downedFine_2fuelbedList")
+          )
+        ),
+        DownWoodCoarse = list(
+          fuelbed1 = list(
+            fuelbed = input$downwoodCoarse_fuelbedList,
+            settings = list(
+              load_1000hr_sound = input$downedCoarseSound_1fuelbed1000hrLoad,
+              load_10000hr_sound = input$downedCoarseSound_1fuelbed10000hrLoad,
+              load_10000plusHr_sound = input$downedCoarseSound_1fuelbed10000plusHrLoad,
+              load_1000hr_rotten = input$downedCoarseRotten_1fuelbed1000hrLoad,
+              load_10000hr_rotten = input$downedCoarseRotten_1fuelbed10000hrLoad,
+              load_10000plusHr_rotten = input$downedCoarseRotten_1fuelbed10000plusHrLoad
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "downedCoarse_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$downwoodCoarse_2fuelbedList,
+            settings = list(
+              load_1000hr_sound = input$downedCoarseSound_2fuelbed1000hrLoad,
+              load_10000hr_sound = input$downedCoarseSound_2fuelbed10000hrLoad,
+              load_10000plusHr_sound = input$downedCoarseSound_2fuelbed10000plusHrLoad,
+              load_1000hr_rotten = input$downedCoarseRotten_2fuelbed1000hrLoad,
+              load_10000hr_rotten = input$downedCoarseRotten_2fuelbed10000hrLoad,
+              load_10000plusHr_rotten = input$downedCoarseRotten_2fuelbed10000plusHrLoad
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "downedCoarse_2fuelbedList")
+          )
+        ),
+        LitterLichenMoss = list(
+          fuelbed1 = list(
+            fuelbed = input$llm_1fuelbedList,
+            settings = list(
+              spatial_pattern = input$llm_1spatialPattern,
+              percent_cover = input$llm_1fuelbedPct,
+              depth = input$llm_1fuelbedDepth,
+              loading = input$llm_1fuelbedLoad,
+              arrangement = input$llm_1arrangement,
+              bulk_density = input$llm_1bulkDensity,
+              short_needle_pine = input$llm_1snp,
+              long_needle_pine = input$llm_1lnp,
+              other_conifer = input$llm_1oc,
+              broadleaf_deciduous = input$llm_1bd,
+              broadleaf_evergreen = input$llm_1be,
+              palm_frond = input$llm_1pf,
+              grass = input$llm_1grass
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "llm_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$llm_2fuelbedList,
+            settings = list(
+              spatial_pattern = input$llm_2spatialPattern,
+              percent_cover = input$llm_2fuelbedPct,
+              depth = input$llm_2fuelbedDepth,
+              loading = input$llm_2fuelbedLoad,
+              arrangement = input$llm_2arrangement,
+              bulk_density = input$llm_2bulkDensity,
+              short_needle_pine = input$llm_2snp,
+              long_needle_pine = input$llm_2lnp,
+              other_conifer = input$llm_2oc,
+              broadleaf_deciduous = input$llm_2bd,
+              broadleaf_evergreen = input$llm_2be,
+              palm_frond = input$llm_2pf,
+              grass = input$llm_2grass
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "llm_2fuelbedList")
+          )
+        ),
+        GroundFuels = list(
+          fuelbed1 = list(
+            fuelbed = input$ground_1fuelbedList,
+            settings = list(
+              spatial_pattern = input$ground_1spatialPattern,
+              upper_pct = input$ground_1upperPct,
+              upper_depth = input$ground_1upperDepth,
+              upper_load = input$ground_1upperLoad,
+              lower_pct = input$ground_1lowerPct,
+              lower_depth = input$ground_1lowerDepth,
+              lower_load = input$ground_1lowerLoad,
+              derivation = input$ground_1derivation
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "ground_1fuelbedList")
+          ),
+          fuelbed2 = list(
+            fuelbed = input$ground_2fuelbedList,
+            settings = list(
+              spatial_pattern = input$ground_2spatialPattern,
+              upper_pct = input$ground_2upperPct,
+              upper_depth = input$ground_2upperDepth,
+              upper_load = input$ground_2upperLoad,
+              lower_pct = input$ground_2lowerPct,
+              lower_depth = input$ground_2lowerDepth,
+              lower_load = input$ground_2lowerLoad,
+              derivation = input$ground_2derivation
+            ),
+            polygons = rv$understory_sf %>% dplyr::filter(fuelbedTab == "ground_2fuelbedList")
+          )
+        )
+
+
+      )
+      convert_to_geojson(understory_data, "fuelbeds_hierarchical.geojson")
+
+
     })
 
     ####################### HELPER FUNCTIONS #######################
+
+    # Convert nested structure to GeoJSON
+    convert_to_geojson <- function(fuelbed_data, output_file) {
+
+      features <- list()
+      feature_count <- 1
+
+      # Iterate through strata (Shrub1, Shrub2, etc.)
+      for (strata in names(fuelbed_data)) {
+
+        # Create Strata feature
+        feature <- list(
+          type = "Feature",
+          properties = list(
+            strata = strata,
+            fuelbeds = list()
+          )
+        )
+
+        fuelbed_count <- 1
+        # Iterate through fuelbeds (fuelbed1, fuelbed2)
+        for (fuelbed_key in names(fuelbed_data[[strata]])) {
+          fuelbed <- fuelbed_data[[strata]][[fuelbed_key]]
+
+          fuelbed_info <- list(
+            number = fuelbed$fuelbed,
+            settings = fuelbed$settings,
+            polygons = list()
+          )
+
+          # Create GeoJSON geometry
+          geometry <- list(
+            type = "MultiPolygon",
+            coordinates = list()
+          )
+
+          if(length(fuelbed$polygons$geometry) == 0) {
+            sf_obj <- st_read(rv$polygon, quiet = TRUE)
+
+            # Extract coordinates
+            coords <- st_coordinates(sf_obj)[, 1:2]
+            print(coords)
+            coords_formatted <- list(as.matrix(coords))
+            geometry$coordinates[[length(geometry$coordinates) + 1]] <- coords_formatted
+          }
+          else {
+            # Iterate through polygons
+            for (p_geom in fuelbed$polygons$geometry) {
+              # Convert sf to coordinates
+              coords <- st_coordinates(p_geom)
+              # Remove last column (L1, L2, etc.)
+              coords <- coords[, 1:2, drop = FALSE]
+
+              # Close polygon if not already closed
+              if (! all(coords[1,] == coords[nrow(coords),])) {
+                coords <- rbind(coords, coords[1,])
+              }
+
+              # Append to geometry coordinates
+              geometry$coordinates[[length(geometry$coordinates) + 1]] <- list(as.matrix(coords))
+            }
+          }
+
+          # Append geometry to fuelbed list
+          fuelbed_info$polygons <- geometry
+
+          # # Create feature
+          # feature <- list(
+          #   type = "Feature",
+          #   properties = list(
+          #     strata = strata,
+          #     fuelbed = fuelbed$fuelbed,  # just save the fuelbed number
+          #     settings = settings
+          #   ),
+          #   geometry = geometry
+          # )
+          feature$properties$fuelbeds[[fuelbed_count]] <- fuelbed_info
+          fuelbed_count <- fuelbed_count + 1
+        }
+        features[[feature_count]] <- feature
+        feature_count <- feature_count + 1
+      }
+
+      # Create FeatureCollection
+      geojson <- list(
+        type = "FeatureCollection",
+        metadata = list(
+          created = as.character(Sys.time()),
+          total_features = length(features)
+        ),
+        features = features
+      )
+
+      # Write to file
+      write(toJSON(geojson, auto_unbox = TRUE, pretty = TRUE), output_file)
+
+      cat("Saved", length(features), "features to", output_file, "\n")
+
+      return(geojson)
+    }
 
     getData <- function(source) {
       csv_data <- read.csv(source)
@@ -2016,7 +2501,14 @@ function(input, output, session) {
       myAOI <- getAOI(sf_object)
       save_file <- tempfile(fileext = ".zip")
       # Request FCCS fuelbeds for the polygon
-      resp <- landfireAPIv2(products=c("240FCCS"), aoi=myAOI, email="bdrye@uw.edu", path=save_file)
+      response <- tryCatch(
+        {
+          resp <- landfireAPIv2(products=c("240FCCS"), aoi=myAOI, email="bdrye@uw.edu", path=save_file)
+        }, error = function(e) {
+          stop("API request failed: ", e$message)
+        }
+      )
+#      resp <- landfireAPIv2(products=c("240FCCS"), aoi=myAOI, email="bdrye@uw.edu", path=save_file)
 
       # create a new temp directory inside tempdir()
 
@@ -2524,6 +3016,20 @@ function(input, output, session) {
           rv$herb2_1_species_div_df <- rv$species_df
         } else if(input$Herbs2_tabs == "herb2_2fuelbedList") {
           rv$herb2_2_species_div_df <- rv$species_df
+        }
+      }
+      if(input$understory == "Downed Wood: fine wood") {
+        if(input$DownedWoodFine_tabs == "downed_fine_1fuelbedList") {
+          rv$downed_fine_1_species_div_df <- rv$species_df
+        } else if(input$DownedWoodFine_tabs == "downed_fine_2fuelbedList") {
+          rv$downed_fine_2_species_div_df <- rv$species_df
+        }
+      }
+      if(input$understory == "Downed Wood: coarse wood") {
+        if(input$DownedWoodCoarse_tabs == "downed_coarse_1fuelbedList") {
+          rv$downed_coarse_1_species_div_df <- rv$species_df
+        } else if(input$DownedWoodCoarse_tabs == "downed_coarse_2fuelbedList") {
+          rv$downed_coarse_2_species_div_df <- rv$species_df
         }
       }
     }
