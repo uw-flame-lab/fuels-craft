@@ -12,8 +12,11 @@ WORKDIR /app/client
 # Install dependencies
 RUN npm ci
 
-# Build React app
-RUN npm run build && ls -la build/
+# Build React app with error output
+RUN npm run build
+
+# List contents to debug
+RUN echo "Build directory contents:" && ls -la build/ 2>&1 || echo "ERROR: build directory missing!"
 
 # Stage 2: Runtime environment
 FROM node:18-alpine
@@ -35,9 +38,6 @@ COPY server ./
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/client/build ./client/build
 
-# Verify build was copied
-RUN ls -la client/build/ || echo "WARNING: build directory not found"
-
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/uploads && chmod 777 /app/uploads
 
@@ -52,6 +52,10 @@ USER nodejs
 
 # Expose port
 EXPOSE 3001
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "index.js"]
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
