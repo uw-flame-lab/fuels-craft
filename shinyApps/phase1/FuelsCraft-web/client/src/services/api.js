@@ -1,35 +1,32 @@
 import axios from 'axios';
 
-// Dynamically determine API base URL at runtime
+// Get API base URL at runtime (when the app loads in browser)
 const getAPIBaseURL = () => {
+  // Try environment variable first
   if (process.env.REACT_APP_API_URL) {
-    console.log('Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
 
-  // Get the current protocol, hostname, and port
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const port = window.location.port;
-
-  // In production, use the current server (same origin)
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    const baseUrl = port ? `${protocol}//${hostname}:${port}/api` : `${protocol}//${hostname}/api`;
-    console.log('Using production API URL:', baseUrl);
-    return baseUrl;
-  }
-
-  // Development: use localhost:3001
-  const devUrl = 'http://localhost:3001/api';
-  console.log('Using development API URL:', devUrl);
-  return devUrl;
+  // Use relative URL - will always use same origin as the frontend
+  // This works for both localhost:3001 and production servers
+  return '/api';
 };
 
-const API_BASE_URL = getAPIBaseURL();
+// Create axios instance with the correct base URL
+const createAPIClient = () => {
+  const baseURL = getAPIBaseURL();
+  console.log('API Client using baseURL:', baseURL);
+
+  return axios.create({
+    baseURL: baseURL
+  });
+};
+
+const apiClient = createAPIClient();
 
 export const fastfuelsAPI = {
   createDomain: async (geojson, apiKey) => {
-    const response = await axios.post(`${API_BASE_URL}/fastfuels/domains`, {
+    const response = await apiClient.post(`/fastfuels/domains`, {
       geojson,
       apiKey
     });
@@ -37,24 +34,24 @@ export const fastfuelsAPI = {
   },
 
   createRoadFeature: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/features/road`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/features/road`,
       { apiKey }
     );
     return response.data;
   },
 
   createWaterFeature: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/features/water`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/features/water`,
       { apiKey }
     );
     return response.data;
   },
 
   createTreeInventory: async (domainId, apiKey, options = {}) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/inventories/tree`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/inventories/tree`,
       {
         apiKey,
         treeMapVersion: options.treeMapVersion || '2016',
@@ -66,48 +63,48 @@ export const fastfuelsAPI = {
   },
 
   exportTreeInventory: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/inventories/tree/exports/csv`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/inventories/tree/exports/csv`,
       { apiKey }
     );
     return response.data;
   },
 
   uploadTreeInventory: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/inventories/tree/upload`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/inventories/tree/upload`,
       { apiKey }
     );
     return response.data;
   },
 
   createTreeGrid: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/grids/tree`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/grids/tree`,
       { apiKey }
     );
     return response.data;
   },
 
   createSurfaceGrid: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/grids/surface`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/grids/surface`,
       { apiKey }
     );
     return response.data;
   },
 
   createTopographyGrid: async (domainId, apiKey) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/grids/topography`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/grids/topography`,
       { apiKey }
     );
     return response.data;
   },
 
   getInputFiles: async (domainId, apiKey, format = 'zip') => {
-    const response = await axios.post(
-      `${API_BASE_URL}/fastfuels/domains/${domainId}/grids/exports/${format}`,
+    const response = await apiClient.post(
+      `/fastfuels/domains/${domainId}/grids/exports/${format}`,
       { apiKey }
     );
     return response.data;
@@ -118,12 +115,12 @@ export const dataAPI = {
   loadCSV: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await axios.post(`${API_BASE_URL}/data/load-csv`, formData);
+    const response = await apiClient.post(`/data/load-csv`, formData);
     return response.data;
   },
 
   saveInventory: async (data, domainId) => {
-    const response = await axios.post(`${API_BASE_URL}/data/save-inventory`, {
+    const response = await apiClient.post(`/data/save-inventory`, {
       data,
       domainId
     });
@@ -131,7 +128,7 @@ export const dataAPI = {
   },
 
   processInventory: async (data, operation, params) => {
-    const response = await axios.post(`${API_BASE_URL}/data/process-inventory`, {
+    const response = await apiClient.post(`/data/process-inventory`, {
       data,
       operation,
       params
@@ -140,7 +137,7 @@ export const dataAPI = {
   },
 
   getFuelbeds: async () => {
-    const response = await axios.get(`${API_BASE_URL}/data/fuelbeds`);
+    const response = await apiClient.get(`/data/fuelbeds`);
     return response.data;
   }
 };
