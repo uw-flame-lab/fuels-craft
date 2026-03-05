@@ -2,6 +2,8 @@
 # Stage 1: Build React frontend
 FROM node:18-alpine AS frontend-builder
 
+ARG REACT_APP_API_URL=http://localhost:3001/api
+
 WORKDIR /app
 
 # Copy entire client directory
@@ -12,8 +14,8 @@ WORKDIR /app/client
 # Install dependencies
 RUN npm ci
 
-# Build React app with error output
-RUN npm run build
+# Build React app with environment variable
+RUN REACT_APP_API_URL=${REACT_APP_API_URL} npm run build
 
 # List contents to debug
 RUN echo "Build directory contents:" && ls -la build/ 2>&1 || echo "ERROR: build directory missing!"

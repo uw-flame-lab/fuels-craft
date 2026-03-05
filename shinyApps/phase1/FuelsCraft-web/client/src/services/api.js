@@ -1,6 +1,23 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// Dynamically determine API base URL
+// In production, use the current window location
+// In development, use localhost:3001
+const getAPIBaseURL = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Production: use current server
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return `/api`; // Relative URL - will use same host/port as frontend
+  }
+  
+  // Development: use localhost:3001
+  return 'http://localhost:3001/api';
+};
+
+const API_BASE_URL = getAPIBaseURL();
 
 export const fastfuelsAPI = {
   createDomain: async (geojson, apiKey) => {
