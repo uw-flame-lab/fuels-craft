@@ -50,10 +50,19 @@ case $ACTION in
         echo "Running full deployment..."
         ssh -o ConnectTimeout=10 "$HOST" 'bash -s' << 'EOF'
             set -e
-            echo "Step 1: Pulling latest code..."
-            cd /home/ubuntu/fuels-craft-web || (mkdir -p /home/ubuntu && cd /home/ubuntu && git clone https://github.com/uw-flame-lab/fuels-craft.git fuels-craft-web)
-            cd /home/ubuntu/fuels-craft-web/shinyApps/phase1/FuelsCraft-web
+            echo "Step 1: Pulling latest code... handle first-time setup if needed"
+            if [ ! -d /home/ubuntu/fuels-craft-web ]; then
+                echo "First time setup detected, creating directory..."
+                mkdir -p /home/ubuntu/fuels-craft-web
+            fi
+            if [ ! -d /home/ubuntu/fuels-craft-web/.git ]; then
+                echo "Cloning repository..."
+                git clone https://github.com/briandrye/fuels-craft-web.git /home/ubuntu/fuels-craft-web
+            fi
+
+            cd /home/ubuntu/fuels-craft-web
             git pull origin main
+            cd /home/ubuntu/fuels-craft-web/shinyApps/phase1/FuelsCraft-web
 
             echo "Step 2: Building Docker image..."
             docker build -t fuels-craft-web:latest .
