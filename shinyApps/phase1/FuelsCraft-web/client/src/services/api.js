@@ -1,20 +1,28 @@
 import axios from 'axios';
 
-// Dynamically determine API base URL
-// In production, use the current window location
-// In development, use localhost:3001
+// Dynamically determine API base URL at runtime
 const getAPIBaseURL = () => {
   if (process.env.REACT_APP_API_URL) {
+    console.log('Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
-  
-  // Production: use current server
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return `/api`; // Relative URL - will use same host/port as frontend
+
+  // Get the current protocol, hostname, and port
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port;
+
+  // In production, use the current server (same origin)
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    const baseUrl = port ? `${protocol}//${hostname}:${port}/api` : `${protocol}//${hostname}/api`;
+    console.log('Using production API URL:', baseUrl);
+    return baseUrl;
   }
-  
+
   // Development: use localhost:3001
-  return 'http://localhost:3001/api';
+  const devUrl = 'http://localhost:3001/api';
+  console.log('Using development API URL:', devUrl);
+  return devUrl;
 };
 
 const API_BASE_URL = getAPIBaseURL();
