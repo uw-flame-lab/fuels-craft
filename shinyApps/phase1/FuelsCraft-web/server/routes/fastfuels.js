@@ -30,6 +30,13 @@ const pollForCompletion = async (url, apiKey, maxAttempts = 60) => {
 router.post('/domains', async (req, res) => {
   try {
     const { geojson, apiKey } = req.body;
+
+    if (!apiKey) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
+
+    console.log(`Creating domain with API URL: ${FASTFUELS_API_URL}`);
+
     const response = await axios.post(
       `${FASTFUELS_API_URL}/domains`,
       geojson,
@@ -42,7 +49,9 @@ router.post('/domains', async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Domain creation error:', error.message);
+    console.error('Error details:', error.response?.data || error);
+    res.status(500).json({ error: error.message, details: error.response?.data });
   }
 });
 
