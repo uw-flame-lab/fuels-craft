@@ -40,7 +40,13 @@ app.get('/api/health', (req, res) => {
 
 // Serve React app for all other routes (SPA routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  const indexPath = path.join(__dirname, '../client/build/index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err);
+      res.status(500).send('Could not find index.html');
+    }
+  });
 });
 
 app.listen(PORT, () => {

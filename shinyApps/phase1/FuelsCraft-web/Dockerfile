@@ -2,20 +2,18 @@
 # Stage 1: Build React frontend
 FROM node:18-alpine AS frontend-builder
 
-WORKDIR /app/client
+WORKDIR /app
 
-# Copy client package files
-COPY client/package*.json ./
+# Copy entire client directory
+COPY client ./client
+
+WORKDIR /app/client
 
 # Install dependencies
 RUN npm ci
 
-# Copy client source
-COPY client/src ./src
-COPY client/public ./public
-
 # Build React app
-RUN npm run build
+RUN npm run build && ls -la build/
 
 # Stage 2: Runtime environment
 FROM node:18-alpine
@@ -36,6 +34,9 @@ COPY server ./
 
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/client/build ./client/build
+
+# Verify build was copied
+RUN ls -la client/build/ || echo "WARNING: build directory not found"
 
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/uploads && chmod 777 /app/uploads
