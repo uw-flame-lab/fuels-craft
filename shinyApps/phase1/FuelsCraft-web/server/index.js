@@ -27,7 +27,9 @@ app.use(session({
 }));
 
 // Serve static files from React build
-app.use(express.static(path.join(__dirname, '../client/build')));
+const buildPath = path.join(__dirname, 'client', 'build');
+console.log(`Serving static files from: ${buildPath}`);
+app.use(express.static(buildPath));
 
 // Routes
 app.use('/api/fastfuels', fastfuelsRoutes);
@@ -40,7 +42,8 @@ app.get('/api/health', (req, res) => {
 
 // Serve React app for all other routes (SPA routing)
 app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, '../client/build/index.html');
+  const indexPath = path.join(buildPath, 'index.html');
+  console.log(`Serving index.html from: ${indexPath}`);
   res.sendFile(indexPath, (err) => {
     if (err) {
       console.error('Error sending index.html:', err);
