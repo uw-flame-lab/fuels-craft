@@ -2,23 +2,17 @@
 # Stage 1: Build React frontend
 FROM node:18-alpine AS frontend-builder
 
-ARG REACT_APP_API_URL=http://localhost:3001/api
-
 WORKDIR /app
 
-# Copy entire client directory
+# Copy entire client directory with all dependencies
 COPY client ./client
 
+# Build React app
 WORKDIR /app/client
+RUN npm ci && npm run build
 
-# Install dependencies
-RUN npm ci
-
-# Build React app with environment variable
-RUN REACT_APP_API_URL=${REACT_APP_API_URL} npm run build
-
-# List contents to debug
-RUN echo "Build directory contents:" && ls -la build/ 2>&1 || echo "ERROR: build directory missing!"
+# Verify build succeeded
+RUN test -f build/index.html || (echo "ERROR: build/index.html not found!" && exit 1)
 
 # Stage 2: Runtime environment
 FROM node:18-alpine
@@ -29,16 +23,16 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init
 
 # Copy server files
-COPY server/package*.json ./
+COPY server ./
 
 # Install production dependencies only
 RUN npm ci --production
 
-# Copy server source
-COPY server ./
-
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/client/build ./client/build
+
+# Verify frontend was copied
+RUN test -f client/build/index.html || (echo "ERROR: frontend not copied!" && exit 1)
 
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/uploads && chmod 777 /app/uploads
